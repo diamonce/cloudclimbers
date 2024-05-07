@@ -1,4 +1,4 @@
-### 🌐 ** We are "Cloud Climbers" - Hackathon Team**
+### 🌐 We are the "Cloud Climbers" - Hackathon Team 
 
 ---
 
@@ -13,14 +13,14 @@
 - **Artificial Intelligence (AI)**
 
 #### 🕒 **Work Style**
-- **Asynchronous** One Zoom call per week %)
+- **Asynchronous** - One Zoom call per week %)
 
 #### 📊 **Planning Style**
-- **Agile** Sprints but 1 Story Point = 1 Hour
+- **Agile** - We plan in Sprints but use 1 Story Point = 1 Hour
 - **Team Capacity** 48 H / Sprint. Each team member can do 6 hours in a week.
 
 #### 🎯 **Goal**
-- **Minimum Viable Product** in form of Github release.
+- **Minimum Viable Product** in the form of GitHub release.
 
 #### 🛠 **Tools**
 - **Project Management:** [JIRA](https://mindocloud.atlassian.net/)
