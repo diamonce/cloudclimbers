@@ -8,6 +8,7 @@
 - **Vladyslav Plaksa**
 - **Svitlana Dmytrenko**
 - **Denis Klopotovskis**
+- **Andrij Zelenyy**
 
 #### 🤖 **Product Focus**
 - **Artificial Intelligence (AI)**
