@@ -27,3 +27,10 @@
 - **Project Management:** [JIRA](https://mindocloud.atlassian.net/)
 - **CI/CD Diagrams:** We use Miro boards [Miro](https://miro.com/)
 - **Chat:** Telegram Group
+
+#### Quick Start
+Start your day with setting up the environment
+
+# brew install pre-commit
+# pre-commit install
+# pre-commit run --all-files
