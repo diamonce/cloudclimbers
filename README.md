@@ -1,4 +1,4 @@
-### 🌐 We are the "Cloud Climbers" - Hackathon Team 
+### 🌐 We are the "Cloud Climbers" - Hackathon Team
 
 ---
 
