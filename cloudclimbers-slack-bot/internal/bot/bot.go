@@ -14,6 +14,8 @@ import (
 
 	"cloudclimbers-slack-bot/internal/utils"
 	"go.uber.org/zap"
+
+	"fmt"
 )
 
 type Bot struct {
@@ -23,8 +25,28 @@ type Bot struct {
 }
 
 func NewBot(cfg *config.Config, eventHandler *handlers.EventHandler) *Bot {
+	logger := utils.Logger()
+	logger.Info("Creating new bot instance")
+
+	// Check if SlackToken is empty
+	if cfg.SlackToken == "" {
+		logger.Fatal("Slack token is missing")
+	}
+
+	api := slack.New(cfg.SlackToken, slack.OptionDebug(true))
+
+	logger.Info("All systems go")
+
+	groups, err := api.GetUserGroups(slack.GetUserGroupsOptionIncludeUsers(false))
+	if err != nil {
+		fmt.Printf("%s\n", err)
+	}
+	for _, group := range groups {
+		fmt.Printf("ID: %s, Name: %s\n", group.ID, group.Name)
+	}
+
 	return &Bot{
-		api:          slack.New(cfg.SlackToken),
+		api:          api,
 		config:       cfg,
 		eventHandler: eventHandler,
 	}
@@ -50,10 +72,13 @@ func (b *Bot) Start() error {
 	pluginRepo := mongodb.NewMongoDBRepository(client, db)
 
 	http.HandleFunc("/interaction", mainplugin.NewMainPlugin(b.config, pluginRepo).ServeHTTP)
+	logger.Info("NewMainPlugin")
+
 	go func() {
 		if err := http.ListenAndServe(":8080", nil); err != nil {
 			logger.Fatal("Failed to start HTTP server", zap.Error(err))
 		}
+		logger.Info("HTTP server started on port 8080")
 	}()
 
 	for msg := range rtm.IncomingEvents {

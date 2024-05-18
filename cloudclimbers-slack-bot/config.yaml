@@ -1,4 +1,4 @@
-slack_token: "YOUR_SLACK_TOKEN"
+SlackToken: ""
 MongoURI: "mongodb://localhost:27017"  # Ensure this is correctly formatted
 DatabaseName: "cloudclimbers_db"
 plugins:
