@@ -1,0 +1,7 @@
+plugins:
+  create:
+    url: "http://localhost:8081/create"
+  get:
+    url: "http://localhost:8082/get"
+  delete:
+    url: "http://localhost:8083/delete"

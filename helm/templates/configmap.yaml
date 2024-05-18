@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-slack-bot-config
+data:
+  plugins.yaml: |
+{{ .Values.my-slack-bot.pluginsConfig | indent 4 }}
