@@ -3,7 +3,6 @@ package mongodb
 import (
     "context"
     "cloudclimbers-slack-bot/internal/models"
-    "cloudclimbers-slack-bot/internal/repository"
     "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/mongo"
 )
@@ -30,5 +29,28 @@ func (r *MongoDBRepository) GetEnvironment(id string) (*models.Environment, erro
 
 func (r *MongoDBRepository) DeleteEnvironment(id string) error {
     _, err := r.db.Collection("environments").DeleteOne(context.Background(), bson.M{"id": id})
+    return err
+}
+
+func (r *MongoDBRepository) GetEnabledPlugins() ([]models.PluginConfig, error) {
+    cursor, err := r.db.Collection("plugins").Find(context.Background(), bson.M{"enabled": true})
+    if err != nil {
+        return nil, err
+    }
+    defer cursor.Close(context.Background())
+
+    var plugins []models.PluginConfig
+    if err := cursor.All(context.Background(), &plugins); err != nil {
+        return nil, err
+    }
+    return plugins, nil
+}
+
+func (r *MongoDBRepository) SetPluginStatus(name string, enabled bool) error {
+    _, err := r.db.Collection("plugins").UpdateOne(
+        context.Background(),
+        bson.M{"name": name},
+        bson.M{"$set": bson.M{"enabled": enabled}},
+    )
     return err
 }

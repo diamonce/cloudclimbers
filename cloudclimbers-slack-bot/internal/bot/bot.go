@@ -1,10 +1,10 @@
 package bot
 
 import (
-    "my-slack-bot/config"
-    "my-slack-bot/internal/handlers"
-    mainplugin "my-slack-bot/internal/plugins/main"
-    "my-slack-bot/internal/repository/mongodb"
+    "cloudclimbers-slack-bot/config"
+    "cloudclimbers-slack-bot/internal/handlers"
+    "cloudclimbers-slack-bot/internal/plugins/mainplugin"
+    "cloudclimbers-slack-bot/internal/repository/mongodb"
     "github.com/slack-go/slack"
     "go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/mongo/options"

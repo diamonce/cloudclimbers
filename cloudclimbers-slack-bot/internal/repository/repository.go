@@ -7,3 +7,8 @@ type EnvironmentRepository interface {
     GetEnvironment(id string) (*models.Environment, error)
     DeleteEnvironment(id string) error
 }
+
+type PluginRepository interface {
+    GetEnabledPlugins() ([]models.PluginConfig, error)
+    SetPluginStatus(name string, enabled bool) error
+}

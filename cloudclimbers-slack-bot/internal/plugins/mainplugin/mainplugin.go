@@ -1,11 +1,11 @@
-package main
+package mainplugin
 
 import (
     "bytes"
     "encoding/json"
     "log"
-    "my-slack-bot/config"
-    "my-slack-bot/internal/repository"
+    "cloudclimbers-slack-bot/config"
+    "cloudclimbers-slack-bot/internal/repository"
     "net/http"
     "strings"
 
