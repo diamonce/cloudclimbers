@@ -147,3 +147,4 @@ charts/*/*.tgz
 ._*
 .Spotlight-V100
 .Trashes
+cloudclimbers-slack-bot/cloudclimbers-slack-bot-runner

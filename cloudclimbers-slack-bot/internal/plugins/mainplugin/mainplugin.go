@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"cloudclimbers-slack-bot/config"
 	"cloudclimbers-slack-bot/internal/repository"
+	"cloudclimbers-slack-bot/internal/utils"
 	"encoding/json"
-	"log"
 	"net/http"
 	"strings"
 
 	"github.com/slack-go/slack"
+	"go.uber.org/zap"
 )
 
 type MainPlugin struct {
@@ -30,6 +31,7 @@ func (p *MainPlugin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var payload slack.InteractionCallback
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		http.Error(w, "Failed to parse request", http.StatusBadRequest)
+		utils.Logger().Error("Failed to parse request", zap.Error(err))
 		return
 	}
 
@@ -48,7 +50,7 @@ func (p *MainPlugin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (p *MainPlugin) listEnabledPlugins(payload slack.InteractionCallback) {
 	plugins, err := p.pluginRepo.GetEnabledPlugins()
 	if err != nil {
-		log.Printf("Failed to get enabled plugins: %v", err)
+		utils.Logger().Error("Failed to get enabled plugins", zap.Error(err))
 		return
 	}
 
@@ -64,28 +66,28 @@ func (p *MainPlugin) listEnabledPlugins(payload slack.InteractionCallback) {
 	msg := slack.MsgOptionAttachments(attachment)
 	_, _, err = p.slackClient.PostMessage(payload.Channel.ID, msg)
 	if err != nil {
-		log.Printf("Failed to post message: %v", err)
+		utils.Logger().Error("Failed to post message", zap.Error(err))
 	}
 }
 
 func (p *MainPlugin) forwardAction(actionID string, payload slack.InteractionCallback) {
 	pluginConfig, exists := p.config.Plugins[actionID]
 	if !exists {
-		log.Printf("Unknown action ID: %s", actionID)
+		utils.Logger().Warn("Unknown action ID", zap.String("action_id", actionID))
 		return
 	}
 
 	payloadBytes, _ := json.Marshal(payload)
 	resp, err := http.Post(pluginConfig.URL, "application/json", bytes.NewBuffer(payloadBytes))
 	if err != nil {
-		log.Printf("Failed to call plugin: %v", err)
+		utils.Logger().Error("Failed to call plugin", zap.Error(err))
 		return
 	}
 	defer resp.Body.Close()
 
 	var response map[string]interface{}
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		log.Printf("Failed to parse response from plugin: %v", err)
+		utils.Logger().Error("Failed to parse response from plugin", zap.Error(err))
 		return
 	}
 
@@ -101,7 +103,7 @@ func (p *MainPlugin) forwardAction(actionID string, payload slack.InteractionCal
 		msg := slack.MsgOptionAttachments(attachment)
 		_, _, err := p.slackClient.PostMessage(payload.Channel.ID, msg)
 		if err != nil {
-			log.Printf("Failed to post message: %v", err)
+			utils.Logger().Error("Failed to post message", zap.Error(err))
 		}
 	}
 
@@ -119,7 +121,7 @@ func (p *MainPlugin) forwardAction(actionID string, payload slack.InteractionCal
 		msg := slack.MsgOptionBlocks(actionBlock)
 		_, _, err := p.slackClient.PostMessage(payload.Channel.ID, msg)
 		if err != nil {
-			log.Printf("Failed to post message: %v", err)
+			utils.Logger().Error("Failed to post message", zap.Error(err))
 		}
 	}
 }

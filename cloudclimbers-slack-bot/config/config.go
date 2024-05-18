@@ -2,12 +2,15 @@ package config
 
 import (
 	"github.com/spf13/viper"
+	"os"
+	"path/filepath"
 )
 
 type Config struct {
-	SlackToken string
-	MongoURI   string
-	Plugins    map[string]PluginConfig
+	SlackToken   string
+	MongoURI     string
+	DatabaseName string
+	Plugins      map[string]PluginConfig
 }
 
 type PluginConfig struct {
@@ -15,24 +18,22 @@ type PluginConfig struct {
 }
 
 func LoadConfig() (*Config, error) {
+	exePath, err := os.Executable()
+	if err != nil {
+		return nil, err
+	}
+	exeDir := filepath.Dir(exePath)
+
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
+	viper.AddConfigPath(exeDir)
+
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, err
 	}
 
 	var cfg Config
 	if err := viper.Unmarshal(&cfg); err != nil {
-		return nil, err
-	}
-
-	viper.SetConfigName("plugins")
-	if err := viper.MergeInConfig(); err != nil {
-		return nil, err
-	}
-
-	if err := viper.UnmarshalKey("plugins", &cfg.Plugins); err != nil {
 		return nil, err
 	}
 
