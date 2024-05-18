@@ -1,34 +1,149 @@
-# Local .terraform directories
-**/.terraform/*
+# Go
+/bin
+/pkg
+/*.exe
+/*.exe~
+/*.dll
+/*.so
+/*.dylib
+/*.test
+**/vendor
+# Go specific directories/files
+/go.sum
+/go.mod
+/go.work
+/go.work.sum
 
-# .tfstate files
+# Python
+__pycache__/
+/*.py[cod]
+*$py.class
+/.Python
+/env/
+/venv/
+/ENV/
+/env.bak/
+/venv.bak/
+/.venv
+
+# Virtualenv
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+/junitxml.xml
+
+# Terraform
+**/.terraform/*
 *.tfstate
 *.tfstate.*
-
-# Crash log files
 crash.log
 crash.*.log
-
-# Exclude all .tfvars files, which are likely to contain sensitive data, such as
-# password, private keys, and other secrets. These should not be part of version
-# control as they are data points which are potentially sensitive and subject
-# to change depending on the environment.
 *.tfvars
 *.tfvars.json
-
-# Ignore override files as they are usually used to override resources locally and so
-# are not checked in
 override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
-
-# Include override files you do wish to add to version control using negated pattern
-# !example_override.tf
-
-# Include tfplan files to ignore the plan output of command: terraform plan -out=tfplan
-# example: *tfplan*
-
-# Ignore CLI configuration files
 .terraformrc
 terraform.rc
+# Negate patterns for override files you wish to add to version control
+# !example_override.tf
+# Ignore tfplan files
+*tfplan*
+
+# Helm
+*.tgz
+.chart
+
+# Kubernetes
+kube-config.yaml
+.kube/
+
+# GCP
+.gcloud/
+*.json
+
+# Secrets
+*.pem
+*.key
+*.crt
+*.cer
+*.der
+*.p12
+*.pfx
+
+# IDEs and Editors
+/.idea/
+/.vscode/
+/*.swp
+/.project
+/.classpath
+/.cproject
+/.settings/
+.DS_Store
+
+# Logs and temporary files
+/logs
+*.log
+*.tmp
+*.temp
+*.bak
+*.orig
+*.old
+
+# Binaries
+*.out
+*.exe
+*.o
+*.a
+*.so
+
+# Archives
+*.tar
+*.gz
+*.zip
+*.rar
+*.7z
+*.bz2
+*.xz
+*.pkg
+*.deb
+*.rpm
+*.iso
+*.img
+
+# Ignore everything in the 'dist' directory
+/dist
+# Ignore build artifacts and generated files
+/build
+/gen
+
+# Docker
+*.dockerfile
+/docker-compose.yml
+/docker-compose.*.yml
+docker-compose.override.yml
+
+# Custom exclusion for the Helm chart directory to ignore built charts
+charts/*/*.tgz
+
+# Misc
+.vagrant/
+.vscode/
+.idea/
+._*
+.Spotlight-V100
+.Trashes

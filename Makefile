@@ -12,8 +12,15 @@ GET_IMAGE_REPO=myrepo/get-plugin
 DELETE_IMAGE_REPO=myrepo/delete-plugin
 IMAGE_TAG=latest
 
+# Ensure Go module is initialized
+go-init:
+	@echo "==> Initializing Go module..."
+	@if [ ! -f go.mod ]; then go mod init github.com/dchernenko/cloudclimbers; fi
+	@go mod tidy
+	@echo "==> Go module initialized"
+
 # Build main binary
-build:
+build: go-init
 	@echo "==> Building the binary..."
 	@go build -o $(BINARY_NAME) $(MAIN_PACKAGE)/main.go
 	@echo "==> Build completed: $(BINARY_NAME)"
@@ -49,4 +56,4 @@ docker-run: docker-build
 	@echo "==> Running Docker container..."
 	@docker run --rm -p 8080:8080 $(MAIN_IMAGE_REPO):$(IMAGE_TAG)
 
-.PHONY: build run test clean docker-build docker-run
+.PHONY: go-init build run test clean docker-build docker-run
