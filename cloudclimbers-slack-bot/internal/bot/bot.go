@@ -25,18 +25,17 @@ type Bot struct {
 	socketClient *socketmode.Client
 	config       *config.Config
 	eventHandler *handlers.EventHandler
+	mainPlugin   *mainplugin.MainPlugin
 }
 
 func NewBot(cfg *config.Config, eventHandler *handlers.EventHandler) *Bot {
 	logger := utils.Logger()
 	logger.Info("Creating new bot instance")
 
-	// Check if SlackBotToken is empty
 	if cfg.SlackBotToken == "" {
 		logger.Fatal("Slack bot token is missing")
 	}
 
-	// Check if SlackAppToken is empty
 	if cfg.SlackAppToken == "" {
 		logger.Fatal("Slack app token is missing")
 	}
@@ -63,6 +62,7 @@ func NewBot(cfg *config.Config, eventHandler *handlers.EventHandler) *Bot {
 		socketClient: socketClient,
 		config:       cfg,
 		eventHandler: eventHandler,
+		mainPlugin:   mainplugin.NewMainPlugin(cfg, nil, socketClient), // Initialize mainPlugin with nil for repo for now
 	}
 }
 
@@ -76,111 +76,133 @@ func (b *Bot) Start() error {
 		logger.Error("Failed to connect to MongoDB", zap.Error(err))
 		return err
 	}
-	logger.Info("Successfully connected to MongoDB")
-
-	logger.Info("Using database", zap.String("database", b.config.DatabaseName))
-	db := client.Database(b.config.DatabaseName)
-	pluginRepo := mongodb.NewMongoDBRepository(client, db)
-
-	mainPlugin := mainplugin.NewMainPlugin(b.config, pluginRepo, b.socketClient)
-
-	http.HandleFunc("/interaction", mainPlugin.ServeHTTP)
-	logger.Info("Initialized main plugin for Slack interactions")
-
-	go func() {
-		for evt := range b.socketClient.Events {
-			switch evt.Type {
-			case socketmode.EventTypeConnecting:
-				logger.Info("Connecting to Slack with Socket Mode...")
-			case socketmode.EventTypeConnectionError:
-				logger.Error("Connection failed. Retrying later...")
-			case socketmode.EventTypeConnected:
-				logger.Info("Connected to Slack with Socket Mode.")
-			case socketmode.EventTypeEventsAPI:
-				eventsAPIEvent, ok := evt.Data.(slackevents.EventsAPIEvent)
-				if !ok {
-					logger.Warn("Ignored unknown event", zap.Any("event", evt))
-					continue
-				}
-
-				logger.Info("Event received", zap.Any("event", eventsAPIEvent))
-
-				b.socketClient.Ack(*evt.Request)
-
-				switch eventsAPIEvent.Type {
-				case slackevents.CallbackEvent:
-					innerEvent := eventsAPIEvent.InnerEvent
-					switch ev := innerEvent.Data.(type) {
-					case *slackevents.AppMentionEvent:
-						_, _, err := b.api.PostMessage(ev.Channel, slack.MsgOptionText("Yes, hello.", false))
-						if err != nil {
-							logger.Error("Failed to post message", zap.Error(err))
-						}
-					case *slackevents.MemberJoinedChannelEvent:
-						logger.Info("User joined channel", zap.String("user", ev.User), zap.String("channel", ev.Channel))
-					}
-				default:
-					b.socketClient.Debugf("unsupported Events API event received")
-				}
-			case socketmode.EventTypeInteractive:
-				callback, ok := evt.Data.(slack.InteractionCallback)
-				if !ok {
-					logger.Warn("Ignored unknown interaction", zap.Any("event", evt))
-					continue
-				}
-
-				logger.Info("Interaction received", zap.Any("callback", callback))
-
-				var payload interface{}
-
-				switch callback.Type {
-				case slack.InteractionTypeBlockActions:
-					b.socketClient.Debugf("button clicked!")
-				case slack.InteractionTypeShortcut:
-				case slack.InteractionTypeViewSubmission:
-				case slack.InteractionTypeDialogSubmission:
-				default:
-				}
-
-				b.socketClient.Ack(*evt.Request, payload)
-			case socketmode.EventTypeSlashCommand:
-				cmd, ok := evt.Data.(slack.SlashCommand)
-				if !ok {
-					logger.Warn("Ignored unknown slash command", zap.Any("event", evt))
-					continue
-				}
-
-				logger.Info("Slash command received", zap.Any("command", cmd))
-
-				payload := map[string]interface{}{
-					"blocks": []slack.Block{
-						slack.NewSectionBlock(
-							&slack.TextBlockObject{
-								Type: slack.MarkdownType,
-								Text: "foo",
-							},
-							nil,
-							slack.NewAccessory(
-								slack.NewButtonBlockElement(
-									"",
-									"somevalue",
-									&slack.TextBlockObject{
-										Type: slack.PlainTextType,
-										Text: "bar",
-									},
-								),
-							),
-						),
-					},
-				}
-
-				b.socketClient.Ack(*evt.Request, payload)
-			default:
-				logger.Error("Unexpected event type received", zap.Any("event", evt))
-			}
+	defer func() {
+		if err = client.Disconnect(context.Background()); err != nil {
+			logger.Error("Failed to disconnect from MongoDB", zap.Error(err))
 		}
 	}()
+	logger.Info("Successfully connected to MongoDB")
+
+	db := client.Database(b.config.DatabaseName)
+	pluginRepo := mongodb.NewMongoDBRepository(client, db)
+	b.mainPlugin = mainplugin.NewMainPlugin(b.config, pluginRepo, b.socketClient)
+
+	http.HandleFunc("/interaction", b.mainPlugin.ServeHTTP)
+	logger.Info("Initialized main plugin for Slack interactions")
+
+	go b.handleSocketEvents()
 
 	b.socketClient.Run()
 	return nil
+}
+
+func (b *Bot) handleSocketEvents() {
+	logger := utils.Logger()
+
+	for evt := range b.socketClient.Events {
+		switch evt.Type {
+		case socketmode.EventTypeConnecting:
+			logger.Info("Connecting to Slack with Socket Mode...")
+		case socketmode.EventTypeConnectionError:
+			logger.Error("Connection failed. Retrying later...")
+		case socketmode.EventTypeConnected:
+			logger.Info("Connected to Slack with Socket Mode.")
+		case socketmode.EventTypeEventsAPI:
+			eventsAPIEvent, ok := evt.Data.(slackevents.EventsAPIEvent)
+			if !ok {
+				logger.Warn("Ignored unknown event", zap.Any("event", evt))
+				continue
+			}
+
+			logger.Info("Event received", zap.Any("event", eventsAPIEvent))
+			b.socketClient.Ack(*evt.Request)
+
+			switch eventsAPIEvent.Type {
+			case slackevents.CallbackEvent:
+				innerEvent := eventsAPIEvent.InnerEvent
+				switch ev := innerEvent.Data.(type) {
+				case *slackevents.AppMentionEvent:
+					_, _, err := b.api.PostMessage(ev.Channel, slack.MsgOptionText("Yes, hello.", false))
+					if err != nil {
+						logger.Error("Failed to post message", zap.Error(err))
+					}
+				case *slackevents.MemberJoinedChannelEvent:
+					logger.Info("User joined channel", zap.String("user", ev.User), zap.String("channel", ev.Channel))
+				}
+			default:
+				b.socketClient.Debugf("Unsupported Events API event received")
+			}
+		case socketmode.EventTypeInteractive:
+			callback, ok := evt.Data.(slack.InteractionCallback)
+			if !ok {
+				logger.Warn("Ignored unknown interaction", zap.Any("event", evt))
+				continue
+			}
+
+			logger.Info("Interaction received", zap.Any("callback", callback))
+
+			var payload interface{}
+
+			switch callback.Type {
+			case slack.InteractionTypeBlockActions:
+				b.handleBlockActions(callback)
+			case slack.InteractionTypeShortcut:
+			case slack.InteractionTypeViewSubmission:
+			case slack.InteractionTypeDialogSubmission:
+			default:
+				logger.Warn("Unsupported interaction type", zap.String("type", string(callback.Type)))
+			}
+
+			b.socketClient.Ack(*evt.Request, payload)
+		case socketmode.EventTypeSlashCommand:
+			cmd, ok := evt.Data.(slack.SlashCommand)
+			if !ok {
+				logger.Warn("Ignored unknown slash command", zap.Any("event", evt))
+				continue
+			}
+
+			logger.Info("Slash command received", zap.Any("command", cmd))
+
+			blocks := []slack.Block{}
+			for _, btn := range b.config.MainButtons {
+				sectionBlock := slack.NewSectionBlock(
+					&slack.TextBlockObject{
+						Type: slack.MarkdownType,
+						Text: ":rocket: *" + btn.Text + "*",
+					},
+					nil,
+					slack.NewAccessory(
+						slack.NewButtonBlockElement(
+							btn.ActionID,
+							"",
+							&slack.TextBlockObject{
+								Type: slack.PlainTextType,
+								Text: btn.Text,
+							},
+						),
+					),
+				)
+				blocks = append(blocks, sectionBlock)
+			}
+
+			payload := map[string]interface{}{
+				"blocks": blocks,
+			}
+
+			b.socketClient.Ack(*evt.Request, payload)
+		default:
+			logger.Error("Unexpected event type received", zap.Any("event", evt))
+		}
+	}
+}
+
+func (b *Bot) handleBlockActions(callback slack.InteractionCallback) {
+	for _, action := range callback.ActionCallback.BlockActions {
+		switch action.ActionID {
+		case "list_enabled_plugins":
+			b.mainPlugin.ListEnabledPlugins(callback)
+		default:
+			b.mainPlugin.ForwardAction(action.ActionID, callback)
+		}
+	}
 }

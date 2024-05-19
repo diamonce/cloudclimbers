@@ -7,7 +7,6 @@ import (
 	"cloudclimbers-slack-bot/internal/utils"
 	"encoding/json"
 	"net/http"
-	"strings"
 
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/socketmode"
@@ -25,7 +24,7 @@ func NewMainPlugin(cfg *config.Config, repo repository.PluginRepository, socketC
 	return &MainPlugin{
 		config:       cfg,
 		pluginRepo:   repo,
-		slackClient:  socketClient.Client, // Correctly reference the client instance
+		slackClient:  socketClient.Client,
 		socketClient: socketClient,
 	}
 }
@@ -42,38 +41,53 @@ func (p *MainPlugin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		for _, action := range payload.ActionCallback.BlockActions {
 			switch action.ActionID {
 			case "list_enabled_plugins":
-				p.listEnabledPlugins(payload)
+				p.ListEnabledPlugins(payload)
 			default:
-				p.forwardAction(action.ActionID, payload)
+				p.ForwardAction(action.ActionID, payload)
 			}
 		}
 	}
 }
 
-func (p *MainPlugin) listEnabledPlugins(payload slack.InteractionCallback) {
-	plugins, err := p.pluginRepo.GetEnabledPlugins()
-	if err != nil {
-		utils.Logger().Error("Failed to get enabled plugins", zap.Error(err))
-		return
+func (p *MainPlugin) ListEnabledPlugins(payload slack.InteractionCallback) {
+	utils.Logger().Info("Processing list_enabled_plugins action")
+
+	// Read plugins from the YAML configuration and check which ones are enabled
+	enabledPlugins := []config.PluginConfig{}
+
+	for pluginName, pluginConfig := range p.config.Plugins {
+		// Here we assume that a plugin is enabled if it has a valid URL
+		if pluginConfig.URL != "" {
+			utils.Logger().Info("Enabled plugin found", zap.String("plugin", pluginName))
+			enabledPlugins = append(enabledPlugins, pluginConfig)
+		}
 	}
 
-	enabledPlugins := make([]string, 0, len(plugins))
-	for _, plugin := range plugins {
-		enabledPlugins = append(enabledPlugins, plugin.Name)
+	// Create buttons for each enabled plugin
+	buttons := make([]slack.BlockElement, 0, len(enabledPlugins))
+	for _, plugin := range enabledPlugins {
+		for _, button := range plugin.Buttons {
+			buttons = append(buttons, slack.NewButtonBlockElement(
+				button.ActionID,
+				"",
+				slack.NewTextBlockObject("plain_text", button.Text, false, false),
+			))
+		}
 	}
 
-	attachment := slack.Attachment{
-		Text: "Enabled Plugins:\n" + strings.Join(enabledPlugins, "\n"),
-	}
+	// Create a Slack message block with the buttons
+	actionBlock := slack.NewActionBlock("enabled_plugins", buttons...)
+	msg := slack.MsgOptionBlocks(actionBlock)
 
-	msg := slack.MsgOptionAttachments(attachment)
-	_, _, err = p.slackClient.PostMessage(payload.Channel.ID, msg)
+	// Send the message to Slack
+	_, _, err := p.slackClient.PostMessage(payload.Channel.ID, msg)
 	if err != nil {
 		utils.Logger().Error("Failed to post message", zap.Error(err))
 	}
+	utils.Logger().Info("Posted message with enabled plugins")
 }
 
-func (p *MainPlugin) forwardAction(actionID string, payload slack.InteractionCallback) {
+func (p *MainPlugin) ForwardAction(actionID string, payload slack.InteractionCallback) {
 	pluginConfig, exists := p.config.Plugins[actionID]
 	if !exists {
 		utils.Logger().Warn("Unknown action ID", zap.String("action_id", actionID))
@@ -129,7 +143,6 @@ func (p *MainPlugin) forwardAction(actionID string, payload slack.InteractionCal
 	}
 }
 
-// Helper function to convert attachments to slack fields
 func convertToSlackFields(fields []map[string]interface{}) []slack.AttachmentField {
 	slackFields := make([]slack.AttachmentField, len(fields))
 	for i, field := range fields {

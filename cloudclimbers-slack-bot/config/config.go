@@ -6,16 +6,23 @@ import (
 	"path/filepath"
 )
 
-type Config struct {
-	SlackAppToken string
-	SlackBotToken string
-	MongoURI      string
-	DatabaseName  string
-	Plugins       map[string]PluginConfig
+type ButtonConfig struct {
+	Text     string `mapstructure:"text"`
+	ActionID string `mapstructure:"action_id"`
 }
 
 type PluginConfig struct {
-	URL string `mapstructure:"url"`
+	URL     string         `mapstructure:"url"`
+	Buttons []ButtonConfig `mapstructure:"buttons"`
+}
+
+type Config struct {
+	SlackBotToken string                  `mapstructure:"slack_bot_token"`
+	SlackAppToken string                  `mapstructure:"slack_app_token"`
+	MongoURI      string                  `mapstructure:"mongo_uri"`
+	DatabaseName  string                  `mapstructure:"database_name"`
+	Plugins       map[string]PluginConfig `mapstructure:"plugins"`
+	MainButtons   []ButtonConfig          `mapstructure:"main_buttons"`
 }
 
 func LoadConfig() (*Config, error) {
