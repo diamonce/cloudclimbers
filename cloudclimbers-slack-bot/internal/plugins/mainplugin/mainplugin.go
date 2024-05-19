@@ -3,10 +3,12 @@ package mainplugin
 import (
 	"bytes"
 	"cloudclimbers-slack-bot/config"
+	"cloudclimbers-slack-bot/internal/models"
 	"cloudclimbers-slack-bot/internal/repository"
 	"cloudclimbers-slack-bot/internal/utils"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/socketmode"
@@ -39,6 +41,7 @@ func (p *MainPlugin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if payload.Type == slack.InteractionTypeBlockActions {
 		for _, action := range payload.ActionCallback.BlockActions {
+			p.logAction(action.ActionID, payload.User.ID, payload.Channel.ID)
 			switch action.ActionID {
 			case "list_enabled_plugins":
 				p.ListEnabledPlugins(payload)
@@ -52,18 +55,15 @@ func (p *MainPlugin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (p *MainPlugin) ListEnabledPlugins(payload slack.InteractionCallback) {
 	utils.Logger().Info("Processing list_enabled_plugins action")
 
-	// Read plugins from the YAML configuration and check which ones are enabled
 	enabledPlugins := []config.PluginConfig{}
 
 	for pluginName, pluginConfig := range p.config.Plugins {
-		// Here we assume that a plugin is enabled if it has a valid URL
 		if pluginConfig.URL != "" {
 			utils.Logger().Info("Enabled plugin found", zap.String("plugin", pluginName))
 			enabledPlugins = append(enabledPlugins, pluginConfig)
 		}
 	}
 
-	// Create buttons for each enabled plugin
 	buttons := make([]slack.BlockElement, 0, len(enabledPlugins))
 	for _, plugin := range enabledPlugins {
 		for _, button := range plugin.Buttons {
@@ -75,11 +75,9 @@ func (p *MainPlugin) ListEnabledPlugins(payload slack.InteractionCallback) {
 		}
 	}
 
-	// Create a Slack message block with the buttons
 	actionBlock := slack.NewActionBlock("enabled_plugins", buttons...)
 	msg := slack.MsgOptionBlocks(actionBlock)
 
-	// Send the message to Slack
 	_, _, err := p.slackClient.PostMessage(payload.Channel.ID, msg)
 	if err != nil {
 		utils.Logger().Error("Failed to post message", zap.Error(err))
@@ -88,8 +86,23 @@ func (p *MainPlugin) ListEnabledPlugins(payload slack.InteractionCallback) {
 }
 
 func (p *MainPlugin) ForwardAction(actionID string, payload slack.InteractionCallback) {
-	pluginConfig, exists := p.config.Plugins[actionID]
-	if !exists {
+	var pluginConfig *config.PluginConfig
+	actionFound := false
+
+	for _, plugin := range p.config.Plugins {
+		for _, button := range plugin.Buttons {
+			if button.ActionID == actionID {
+				pluginConfig = &plugin
+				actionFound = true
+				break
+			}
+		}
+		if actionFound {
+			break
+		}
+	}
+
+	if !actionFound || pluginConfig == nil {
 		utils.Logger().Warn("Unknown action ID", zap.String("action_id", actionID))
 		return
 	}
@@ -140,6 +153,20 @@ func (p *MainPlugin) ForwardAction(actionID string, payload slack.InteractionCal
 		if err != nil {
 			utils.Logger().Error("Failed to post message", zap.Error(err))
 		}
+	}
+}
+
+func (p *MainPlugin) logAction(actionID, userID, channelID string) {
+	actionLog := &models.ActionLog{
+		ActionID:  actionID,
+		UserID:    userID,
+		ChannelID: channelID,
+		Timestamp: time.Now(),
+	}
+
+	err := p.pluginRepo.LogAction(actionLog)
+	if err != nil {
+		utils.Logger().Error("Failed to log action", zap.Error(err))
 	}
 }
 
