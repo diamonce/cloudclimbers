@@ -10,17 +10,18 @@ import (
 
 func main() {
 	utils.InitLogger()
-	defer utils.Logger().Sync()
+	logger := utils.Logger()
+	defer logger.Sync()
 
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		utils.Logger().Fatal("Could not load config", zap.Error(err))
+		logger.Fatal("Failed to load config", zap.Error(err))
 	}
 
 	eventHandler := handlers.NewEventHandler(cfg.Plugins)
 	slackBot := bot.NewBot(cfg, eventHandler)
 
 	if err := slackBot.Start(); err != nil {
-		utils.Logger().Fatal("Could not start the bot", zap.Error(err))
+		logger.Fatal("Failed to start bot", zap.Error(err))
 	}
 }

@@ -7,10 +7,11 @@ import (
 )
 
 type Config struct {
-	SlackToken   string
-	MongoURI     string
-	DatabaseName string
-	Plugins      map[string]PluginConfig
+	SlackAppToken string
+	SlackBotToken string
+	MongoURI      string
+	DatabaseName  string
+	Plugins       map[string]PluginConfig
 }
 
 type PluginConfig struct {

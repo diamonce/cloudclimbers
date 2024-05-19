@@ -10,20 +10,23 @@ import (
 	"strings"
 
 	"github.com/slack-go/slack"
+	"github.com/slack-go/slack/socketmode"
 	"go.uber.org/zap"
 )
 
 type MainPlugin struct {
-	config      *config.Config
-	pluginRepo  repository.PluginRepository
-	slackClient *slack.Client
+	config       *config.Config
+	pluginRepo   repository.PluginRepository
+	slackClient  slack.Client
+	socketClient *socketmode.Client
 }
 
-func NewMainPlugin(cfg *config.Config, repo repository.PluginRepository) *MainPlugin {
+func NewMainPlugin(cfg *config.Config, repo repository.PluginRepository, socketClient *socketmode.Client) *MainPlugin {
 	return &MainPlugin{
-		config:      cfg,
-		pluginRepo:  repo,
-		slackClient: slack.New(cfg.SlackToken),
+		config:       cfg,
+		pluginRepo:   repo,
+		slackClient:  socketClient.Client, // Correctly reference the client instance
+		socketClient: socketClient,
 	}
 }
 
