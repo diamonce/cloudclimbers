@@ -4,9 +4,11 @@ import (
 	"context"
 	"net/http"
 	"strings"
+	"time"
 
 	"cloudclimbers-slack-bot/config"
 	"cloudclimbers-slack-bot/internal/handlers"
+	"cloudclimbers-slack-bot/internal/models"
 	"cloudclimbers-slack-bot/internal/plugins/mainplugin"
 	"cloudclimbers-slack-bot/internal/repository/mongodb"
 	"cloudclimbers-slack-bot/internal/utils"
@@ -26,6 +28,7 @@ type Bot struct {
 	config       *config.Config
 	eventHandler *handlers.EventHandler
 	mainPlugin   *mainplugin.MainPlugin
+	pluginRepo   *mongodb.MongoDBRepository // Add pluginRepo to Bot struct
 }
 
 func NewBot(cfg *config.Config, eventHandler *handlers.EventHandler) *Bot {
@@ -85,6 +88,7 @@ func (b *Bot) Start() error {
 
 	db := client.Database(b.config.DatabaseName)
 	pluginRepo := mongodb.NewMongoDBRepository(client, db)
+	b.pluginRepo = pluginRepo // Assign pluginRepo to Bot struct
 	b.mainPlugin = mainplugin.NewMainPlugin(b.config, pluginRepo, b.socketClient)
 
 	http.HandleFunc("/interaction", b.mainPlugin.ServeHTTP)
@@ -122,11 +126,13 @@ func (b *Bot) handleSocketEvents() {
 				innerEvent := eventsAPIEvent.InnerEvent
 				switch ev := innerEvent.Data.(type) {
 				case *slackevents.AppMentionEvent:
+					b.logAction("app_mention", ev.User, ev.Channel, ev.Text)
 					_, _, err := b.api.PostMessage(ev.Channel, slack.MsgOptionText("Yes, hello.", false))
 					if err != nil {
 						logger.Error("Failed to post message", zap.Error(err))
 					}
 				case *slackevents.MemberJoinedChannelEvent:
+					b.logAction("member_joined_channel", ev.User, ev.Channel, "")
 					logger.Info("User joined channel", zap.String("user", ev.User), zap.String("channel", ev.Channel))
 				}
 			default:
@@ -162,6 +168,7 @@ func (b *Bot) handleSocketEvents() {
 			}
 
 			logger.Info("Slash command received", zap.Any("command", cmd))
+			b.logAction("slash_command", cmd.UserID, cmd.ChannelID, cmd.Text)
 
 			blocks := []slack.Block{}
 			for _, btn := range b.config.MainButtons {
@@ -198,11 +205,46 @@ func (b *Bot) handleSocketEvents() {
 
 func (b *Bot) handleBlockActions(callback slack.InteractionCallback) {
 	for _, action := range callback.ActionCallback.BlockActions {
+		b.logAction(action.ActionID, callback.User.ID, callback.Channel.ID, action.Value)
 		switch action.ActionID {
 		case "list_enabled_plugins":
 			b.mainPlugin.ListEnabledPlugins(callback)
 		default:
 			b.mainPlugin.ForwardAction(action.ActionID, callback)
 		}
+	}
+}
+
+func (b *Bot) logAction(actionID, userID, channelID, text string) {
+	logger := utils.Logger()
+	logger.Info("Logging action", zap.String("action_id", actionID), zap.String("user_id", userID), zap.String("channel_id", channelID))
+
+	userInfo, err := b.api.GetUserInfo(userID)
+	if err != nil {
+		logger.Error("Failed to get user info", zap.String("user_id", userID), zap.Error(err))
+		return
+	}
+
+	channelInfo, err := b.api.GetConversationInfo(channelID, false)
+	if err != nil {
+		logger.Error("Failed to get channel info", zap.String("channel_id", channelID), zap.Error(err))
+		return
+	}
+
+	actionLog := &models.ActionLog{
+		ActionID:    actionID,
+		UserID:      userID,
+		UserName:    userInfo.Name,
+		ChannelID:   channelID,
+		ChannelName: channelInfo.Name,
+		Text:        text,
+		Timestamp:   time.Now(),
+	}
+
+	err = b.pluginRepo.LogAction(actionLog)
+	if err != nil {
+		logger.Error("Failed to log action", zap.Error(err))
+	} else {
+		logger.Info("Successfully logged action", zap.String("action_id", actionID), zap.String("user_id", userID), zap.String("user_name", userInfo.Name), zap.String("channel_id", channelID), zap.String("channel_name", channelInfo.Name), zap.String("text", text))
 	}
 }

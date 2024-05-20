@@ -41,7 +41,8 @@ func (p *MainPlugin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if payload.Type == slack.InteractionTypeBlockActions {
 		for _, action := range payload.ActionCallback.BlockActions {
-			p.logAction(action.ActionID, payload.User.ID, payload.Channel.ID)
+			utils.Logger().Info("Received block action", zap.String("action_id", action.ActionID), zap.String("user_id", payload.User.ID), zap.String("channel_id", payload.Channel.ID))
+			p.logAction(action.ActionID, payload.User.ID, payload.Channel.ID) // Log the action
 			switch action.ActionID {
 			case "list_enabled_plugins":
 				p.ListEnabledPlugins(payload)
@@ -157,6 +158,7 @@ func (p *MainPlugin) ForwardAction(actionID string, payload slack.InteractionCal
 }
 
 func (p *MainPlugin) logAction(actionID, userID, channelID string) {
+	utils.Logger().Info("Logging action", zap.String("action_id", actionID), zap.String("user_id", userID), zap.String("channel_id", channelID))
 	actionLog := &models.ActionLog{
 		ActionID:  actionID,
 		UserID:    userID,
@@ -167,6 +169,8 @@ func (p *MainPlugin) logAction(actionID, userID, channelID string) {
 	err := p.pluginRepo.LogAction(actionLog)
 	if err != nil {
 		utils.Logger().Error("Failed to log action", zap.Error(err))
+	} else {
+		utils.Logger().Info("Successfully logged action", zap.String("action_id", actionID), zap.String("user_id", userID), zap.String("channel_id", channelID))
 	}
 }
 

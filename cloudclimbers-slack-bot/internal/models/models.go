@@ -14,8 +14,11 @@ type PluginConfig struct {
 }
 
 type ActionLog struct {
-	ActionID  string    `bson:"action_id"`
-	UserID    string    `bson:"user_id"`
-	ChannelID string    `bson:"channel_id"`
-	Timestamp time.Time `bson:"timestamp"`
+	ActionID    string    `bson:"action_id"`
+	UserID      string    `bson:"user_id"`
+	UserName    string    `bson:"user_name"`
+	ChannelID   string    `bson:"channel_id"`
+	ChannelName string    `bson:"channel_name"`
+	Text        string    `bson:"text"`
+	Timestamp   time.Time `bson:"timestamp"`
 }

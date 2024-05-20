@@ -26,15 +26,18 @@ func (r *MongoDBRepository) setupCollections() {
 
 	for _, collectionName := range collections {
 		collection := r.db.Collection(collectionName)
-		// Check if the collection exists by counting documents
-		_, err := collection.EstimatedDocumentCount(context.Background(), &options.EstimatedDocumentCountOptions{})
+		count, err := collection.EstimatedDocumentCount(context.Background(), &options.EstimatedDocumentCountOptions{})
 		if err != nil {
-			// If the collection does not exist, create it
-			err = r.db.CreateCollection(context.Background(), collectionName)
+			utils.Logger().Error("Failed to estimate document count", zap.String("collection", collectionName), zap.Error(err))
+			continue
+		}
+		if count == 0 {
+			utils.Logger().Info("Collection does not exist or is empty, creating...", zap.String("collection", collectionName))
+			_, err = collection.InsertOne(context.Background(), bson.M{"test": "test"})
 			if err != nil {
-				utils.Logger().Error("Failed to create collection", zap.String("collection", collectionName), zap.Error(err))
+				utils.Logger().Error("Failed to create collection by inserting test document", zap.String("collection", collectionName), zap.Error(err))
 			} else {
-				utils.Logger().Info("Created collection", zap.String("collection", collectionName))
+				utils.Logger().Info("Created collection by inserting test document", zap.String("collection", collectionName))
 			}
 		} else {
 			utils.Logger().Info("Collection already exists", zap.String("collection", collectionName))
