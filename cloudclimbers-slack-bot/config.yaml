@@ -1,6 +1,7 @@
-SlackToken: ""
-MongoURI: "mongodb://localhost:27017"  # Ensure this is correctly formatted
-DatabaseName: "cloudclimbers_db"
+slack_app_token: ""
+slack_bot_token: ""
+mongo_uri: "mongodb://localhost:27017"  # Ensure this is correctly formatted
+database_name: "cloudclimbers_db"
 plugins:
   create:
     url: "http://localhost:8081/create"
