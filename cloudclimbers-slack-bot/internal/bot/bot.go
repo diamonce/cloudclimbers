@@ -134,6 +134,9 @@ func (b *Bot) handleSocketEvents() {
 				case *slackevents.MemberJoinedChannelEvent:
 					b.logAction("member_joined_channel", ev.User, ev.Channel, "")
 					logger.Info("User joined channel", zap.String("user", ev.User), zap.String("channel", ev.Channel))
+				case *slackevents.AppHomeOpenedEvent:
+					logger.Info("App Home Opened Event received", zap.String("user_id", ev.User))
+					b.mainPlugin.PublishHomeTab(ev.User)
 				}
 			default:
 				b.socketClient.Debugf("Unsupported Events API event received")
