@@ -1,0 +1,22 @@
+SlackToken: ""
+MongoURI: "mongodb://localhost:27017"  # Ensure this is correctly formatted
+DatabaseName: "cloudclimbers_db"
+plugins:
+  create:
+    url: "http://localhost:8081/create"
+    buttons:
+      - text: "Create Environment"
+        action_id: "create_environment"
+  get:
+    url: "http://localhost:8082/get"
+    buttons:
+      - text: "Get Environment Status"
+        action_id: "get_environment_status"
+  delete:
+    url: "http://localhost:8083/delete"
+    buttons:
+      - text: "Delete Environment"
+        action_id: "delete_environment"
+main_buttons:
+  - text: "List Enabled Plugins"
+    action_id: "list_enabled_plugins"

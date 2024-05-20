@@ -1,0 +1,38 @@
+mongodb:
+  auth:
+    username: admin
+    password: password
+    database: mydatabase
+
+create:
+  image:
+    repository: myrepo/create-plugin
+    tag: latest
+
+get:
+  image:
+    repository: myrepo/get-plugin
+    tag: latest
+
+delete:
+  image:
+    repository: myrepo/delete-plugin
+    tag: latest
+
+my-slack-bot:
+  image:
+    repository: myrepo/my-slack-bot
+    tag: latest
+  slackToken: "YOUR_SLACK_TOKEN"
+  mongoURI: "mongodb://admin:password@mongodb:27017/mydatabase"
+  pluginsConfig: |
+    plugins:
+      create:
+        url: "http://create:8081/create"
+      get:
+        url: "http://get:8082/get"
+      delete:
+        url: "http://delete:8083/delete"
+    main_buttons:
+      - text: "List Enabled Plugins"
+        action_id: "list_enabled_plugins"
