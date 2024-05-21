@@ -21,3 +21,7 @@ plugins:
 main_buttons:
   - text: "List Enabled Plugins"
     action_id: "list_enabled_plugins"
+    emoji: ":rocket:"
+  - text: "Help"
+    action_id: "help"
+    emoji: ":information_source:"    
