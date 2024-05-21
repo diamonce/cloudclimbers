@@ -46,10 +46,33 @@ func (p *MainPlugin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			switch action.ActionID {
 			case "list_enabled_plugins":
 				p.ListEnabledPlugins(payload)
+			case "help":
+				p.HelpAction(payload)
 			default:
 				p.ForwardAction(action.ActionID, payload)
 			}
 		}
+	}
+}
+
+func (p *MainPlugin) HelpAction(payload slack.InteractionCallback) {
+	utils.Logger().Info("Processing help action")
+
+	helpText := `:information_source: *How to Use This Bot* :robot_face:
+
+	This bot helps you manage preview environments for your development work. Here are the main commands you can use:
+
+	- *Create Environment*: Create a new preview environment for your feature branch.
+	- *Get Environment Status*: Get the current status and a unique link for your preview environment.
+	- *Delete Environment*: Remove the preview environment once you are done with it.
+
+	To manage access rules, Slack admins can add or remove users from channels. If you are part of a channel, you have the right to manage the namespace, create, and delete environments.
+	`
+
+	msg := slack.MsgOptionText(helpText, false)
+	_, _, err := p.slackClient.PostMessage(payload.Channel.ID, msg)
+	if err != nil {
+		utils.Logger().Error("Failed to post help message", zap.Error(err))
 	}
 }
 
@@ -190,27 +213,32 @@ func (p *MainPlugin) PublishHomeTab(userID string) {
 	logger := utils.Logger()
 
 	homeView := slack.HomeTabViewRequest{
-		Type: "home", // Corrected to use VT function for ViewTypeHome
+		Type: "home",
 		Blocks: slack.Blocks{
 			BlockSet: []slack.Block{
 				slack.NewImageBlock(
 					"https://assets-global.website-files.com/636dbee261df29040c8db281/63785bf38d9dda3badc6329d_VH1jOJ2IcbbIcrMwnC6WVZYbGl7a62ZKCSefB_TumczrstgLmgLfl_wvCtpIEQYEQ6mI4NV4dCo8F7zi4Q3DUeawx4fSmpZtLWIbMV3REqpB-SFhW3boXHLmHK5kH9fu-aCxjcKe_SqJcGe8hCnCqH3qyhK30IjjiMK6wh8W7H-8oYeMWb25VEujkAPsqA.png",
 					"Ephemeral preview environment model",
 					"image1",
-					slack.NewTextBlockObject("plain_text", "Ephemeral preview environment model", false, false), // Added alt text as TextBlockObject
+					slack.NewTextBlockObject("plain_text", "Ephemeral preview environment model", false, false),
 				),
 				slack.NewSectionBlock(
-					slack.NewTextBlockObject("mrkdwn", "*What are Preview Environments?*\n\nPreview Environments, also known as Ephemeral Environments, help software teams increase their development velocity by reducing the time it takes to test and release new features.\n\nPreview Environments are created on-demand for testing a specific git branch before it's merged. Unlike persistent Staging or Production Environments, they are intended to be short-lived and single-purpose, existing only as long as needed to test a specific feature or bug fix.\n\nThey help teams standardize best practices for code review, enable faster reviews, rapid feedback, and iterative cycles, ultimately reducing the workload on maintainers and team leaders.", false, false),
-					nil,
-					nil,
-				),
-				slack.NewSectionBlock(
-					slack.NewTextBlockObject("mrkdwn", "Preview Environments empower teams to shift their testing process to “pre-merge”, making it easier to find bugs, isolate responsibility, and make appropriate changes. They act as a quality gate allowing features to be thoroughly tested in isolation, facilitating feature parallelization or “shifting left”.", false, false),
+					slack.NewTextBlockObject("mrkdwn", "*What are Preview Environments?*\n\n:rocket: *Preview Environments*, also known as *Ephemeral Environments*, help software teams increase their development velocity by reducing the time it takes to test and release new features.\n\nPreview Environments are created *on-demand* for testing a specific git branch before it's merged. Unlike persistent Staging or Production Environments, they are intended to be *short-lived* and *single-purpose*, existing only as long as needed to test a specific feature or bug fix.", false, false),
 					nil,
 					nil,
 				),
 				slack.NewSectionBlock(
-					slack.NewTextBlockObject("mrkdwn", "In summary, Preview Environments fill the gap between local testing and Staging/Production environments. They are designed to test individual features in a production-like environment and have a purpose-driven lifecycle, existing only as long as needed for review. Configure them to create efficiency when deploying code changes.", false, false),
+					slack.NewTextBlockObject("mrkdwn", ":zap: They help teams standardize best practices for code review, enable faster reviews, rapid feedback, and iterative cycles, ultimately reducing the workload on maintainers and team leaders.", false, false),
+					nil,
+					nil,
+				),
+				slack.NewSectionBlock(
+					slack.NewTextBlockObject("mrkdwn", ":gear: *Bot Functionality*\n\nThis bot understands the chat it was invited to as an environment. :busts_in_silhouette: Slack admins manage user access rules to preview environments by adding or removing users to channels. If a user is part of a channel, they have the right to manage this namespace, create, and delete environments.", false, false),
+					nil,
+					nil,
+				),
+				slack.NewSectionBlock(
+					slack.NewTextBlockObject("mrkdwn", ":construction: In summary, Preview Environments fill the gap between local testing and Staging/Production environments. They are designed to test individual features in a production-like environment and have a purpose-driven lifecycle, existing only as long as needed for review. Configure them to create efficiency when deploying code changes.", false, false),
 					nil,
 					nil,
 				),

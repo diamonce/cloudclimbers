@@ -9,6 +9,7 @@ import (
 type ButtonConfig struct {
 	Text     string `mapstructure:"text"`
 	ActionID string `mapstructure:"action_id"`
+	Emoji    string `mapstructure:"emoji"`
 }
 
 type PluginConfig struct {
