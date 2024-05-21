@@ -1,8 +1,8 @@
 FROM golang:1.18 as builder
 WORKDIR /app
-COPY go.mod go.sum ./
+COPY ./cloudclimbers-slack-bot/go.mod ./cloudclimbers-slack-bot/go.sum ./
 RUN go mod download
-COPY . .
+COPY ./cloudclimbers-slack-bot/ .
 RUN go build -o cloudclimbers-slack-bot ./cmd/main.go
 
 FROM alpine:latest

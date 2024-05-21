@@ -2,7 +2,7 @@ FROM python:3.9-slim
 
 WORKDIR /app
 
-COPY plugins/delete/delete_plugin.py .
+COPY delete_plugin.py .
 
 RUN pip install Flask
 
