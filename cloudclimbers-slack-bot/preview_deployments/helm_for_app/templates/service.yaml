@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hns-blog.fullname" . }}
+  labels:
+    {{- include "hns-blog.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+#    - port: {{ .Values.service.port | default "80" }}
+#      targetPort: {{ .Values.service.targetport | default "8081" }}
+    - port: {{ .Values.service.port | quote | default "80" }}
+      targetPort: {{ .Values.service.targetport | quote | default "8081" }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "hns-blog.selectorLabels" . | nindent 4 }}
