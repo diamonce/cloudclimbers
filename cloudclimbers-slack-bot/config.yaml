@@ -13,6 +13,20 @@ plugins:
     buttons:
       - text: "Get Environment Status"
         action_id: "get_environment_status"
+  get_info:
+    commands: | # вибрати, що нам потрібно. Обговорити, як передати змінні та як повернути до бота результат.
+      kubectl get pods -n <namespace> -o wide
+      kubectl describe pods -n <namespace>
+      kubectl get all -n <namespace>
+      kubectl get deployment <deployment-name> -n <namespace>
+      kubectl describe deployment <deployment-name> -n <namespace>
+      kubectl get events -n <namespace>
+    buttons:
+      - text: "Get advanced Environment Status"
+        action_id: "get_adv_environment_status"
+    hash:
+      - type: "SHA-256"
+      - value: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" #Example, this is empty string
   delete:
     url: "http://localhost:8083/delete"
     buttons:
