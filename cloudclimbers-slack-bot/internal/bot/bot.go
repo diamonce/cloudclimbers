@@ -175,10 +175,15 @@ func (b *Bot) handleSocketEvents() {
 
 			blocks := []slack.Block{}
 			for _, btn := range b.config.MainButtons {
+				textWithEmoji := btn.Text
+				if btn.Emoji != "" {
+					textWithEmoji = btn.Emoji + " *" + btn.Text + "*"
+				}
+
 				sectionBlock := slack.NewSectionBlock(
 					&slack.TextBlockObject{
 						Type: slack.MarkdownType,
-						Text: ":rocket: *" + btn.Text + "*",
+						Text: textWithEmoji,
 					},
 					nil,
 					slack.NewAccessory(
@@ -212,6 +217,8 @@ func (b *Bot) handleBlockActions(callback slack.InteractionCallback) {
 		switch action.ActionID {
 		case "list_enabled_plugins":
 			b.mainPlugin.ListEnabledPlugins(callback)
+		case "help":
+			b.mainPlugin.HelpAction(callback)
 		default:
 			b.mainPlugin.ForwardAction(action.ActionID, callback)
 		}

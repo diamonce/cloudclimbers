@@ -3,9 +3,9 @@ MAKEFLAGS += -x
 # Define variables
 BINARY_NAME=cloudclimbers-slack-bot-runner
 MAIN_PACKAGE=./cloudclimbers-slack-bot
-CREATE_PLUGIN_DIR=./cloudclimbers-slack-bot/charts/plugins/create
-GET_PLUGIN_DIR=./cloudclimbers-slack-bot/charts/plugins/get
-DELETE_PLUGIN_DIR=./cloudclimbers-slack-bot/charts/plugins/delete
+CREATE_PLUGIN_DIR=./cloudclimbers-slack-bot/plugins/create
+GET_PLUGIN_DIR=./cloudclimbers-slack-bot/plugins/get
+DELETE_PLUGIN_DIR=./cloudclimbers-slack-bot/plugins/delete
 
 # Docker image repositories and tags
 MAIN_IMAGE_REPO=dchernenko/cloudclimbers-slack-bot
@@ -63,4 +63,20 @@ docker-run: docker-build
 	echo "==> Running Docker container..."
 	docker run --rm -p 8080:8080 $(MAIN_IMAGE_REPO):$(IMAGE_TAG)
 
-.PHONY: go-init deps build run test clean docker-build docker-run
+# Build and run with Docker Compose
+docker-compose-build:
+	echo "==> Building Docker images with Docker Compose..."
+	docker-compose build
+	echo "==> Docker Compose build completed"
+
+docker-compose-up:
+	echo "==> Running Docker containers with Docker Compose..."
+	docker-compose up --build
+	echo "==> Docker Compose up completed"
+
+docker-compose-down:
+	echo "==> Stopping Docker containers with Docker Compose..."
+	docker-compose down
+	echo "==> Docker Compose down completed"
+
+.PHONY: go-init deps build run test clean docker-build docker-run docker-compose-build docker-compose-up docker-compose-down

@@ -2,7 +2,7 @@ FROM python:3.9-slim
 
 WORKDIR /app
 
-COPY plugins/create/create_plugin.py .
+COPY create_plugin.py .
 
 RUN pip install Flask
 
