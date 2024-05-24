@@ -4,9 +4,9 @@
 
 🚀 **Preview Environments**: The Cloud Climbers Slack Bot helps software teams increase their development velocity by reducing the time it takes to test and release new features. It allows for the creation, status check, and deletion of preview environments directly from Slack. And much more...
 
-🧩 **Plugin Development** in Any Language: The Cloud Climbers Slack Bot supports community contributions for plugin development in any programming language. Whether you prefer Python, Go, JavaScript, or any other language, you can create plugins that interact with the bot through simple HTTP endpoints. Because plugins are Docker containers.
+🧩 **Plugin Development**: The Cloud Climbers Slack Bot supports community contributions for plugin development in <span style="color:red">any programming language</span>. Whether you prefer Python, Go, JavaScript, or any other language, you can create plugins that interact with the bot through simple HTTP endpoints. Because plugins are Docker containers. 🤓
 
-🛠 **Extensible and Customizable**: The bot's architecture is designed to be extensible and customizable. Community members can develop and share plugins to extend the functionality of the bot, catering to specific needs and workflows.
+🛠 **Extensible and Customizable**: The bot's architecture is designed to be extensible and customizable. Community members can develop and share plugins to extend the functionality of the bot, catering to specific needs and workflows. Add AI, cleanup, FLUX, Jenkins in 5 minutes. It is that easy.
 
 🕹️ **Buttons in Slack** Not commands. Because buttons are more robust for user interfaces.
 
