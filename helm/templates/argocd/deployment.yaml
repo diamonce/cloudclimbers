@@ -2,9 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: argocd
-  namespace: argocd
-  labels:
-    app: argocd
+  namespace: {{ .Release.Namespace }}
 spec:
   replicas: 1
   selector:
@@ -15,8 +13,12 @@ spec:
       labels:
         app: argocd
     spec:
+      serviceAccountName: argocd
       containers:
         - name: argocd
           image: argoproj/argocd:latest
           ports:
             - containerPort: 8080
+          env:
+            - name: ARGOCD_OPTS
+              value: "--insecure"

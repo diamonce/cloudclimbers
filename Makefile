@@ -102,16 +102,27 @@ docker-compose-down:
 	docker-compose down
 	echo "==> Docker Compose down completed"
 
+# Helm repository add
+helm-repo-add:
+	helm repo add bitnami https://charts.bitnami.com/bitnami
+	helm repo add argo https://argoproj.github.io/argo-helm
+	helm repo update
+
+# Helm dependency build
+helm-deps: helm-repo-add
+	helm dependency update $(HELM_CHART_DIR)
+	helm dependency build $(HELM_CHART_DIR)
+
 # Install Helm chart
-helm-install:
+helm-install: helm-deps
 	helm install $(HELM_RELEASE_NAME) $(HELM_CHART_DIR) --namespace $(HELM_NAMESPACE) --create-namespace
 
 # Upgrade Helm chart
-helm-upgrade:
+helm-upgrade: helm-deps
 	helm upgrade $(HELM_RELEASE_NAME) $(HELM_CHART_DIR) --namespace $(HELM_NAMESPACE)
 
 # Uninstall Helm chart
 helm-uninstall:
 	helm uninstall $(HELM_RELEASE_NAME) --namespace $(HELM_NAMESPACE)
 
-.PHONY: go-init deps build run test clean docker-build docker-run docker-compose-build docker-compose-up docker-compose-down gcr-init gcr-push create-helm-files helm-install helm-upgrade helm-uninstall
+.PHONY: go-init deps build run test clean docker-build docker-run docker-compose-build docker-compose-up docker-compose-down gcr-init gcr-push helm-deps helm-install helm-upgrade helm-uninstall helm-repo-add

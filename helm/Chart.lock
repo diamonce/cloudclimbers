@@ -1,0 +1,9 @@
+dependencies:
+- name: mongodb
+  repository: https://charts.bitnami.com/bitnami
+  version: 15.5.3
+- name: argo-cd
+  repository: https://argoproj.github.io/argo-helm
+  version: 6.11.1
+digest: sha256:eac5fd24ed0326eacf6a4612cc00b0103d876b25cfb702c702fa2c5fb5e907a6
+generated: "2024-05-24T19:15:16.307596+03:00"

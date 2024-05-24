@@ -6,8 +6,8 @@ version: 0.1.0
 appVersion: "1.0"
 dependencies:
   - name: mongodb
-    version: 10.27.0
+    version: 15.5.x
     repository: https://charts.bitnami.com/bitnami
   - name: argo-cd
-    version: 3.26.2
+    version: 6.11.1
     repository: https://argoproj.github.io/argo-helm
