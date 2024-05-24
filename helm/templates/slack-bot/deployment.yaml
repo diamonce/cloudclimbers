@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: slack-bot
+  name: {{ .Release.Name }}-slack-bot
   labels:
-    app: slack-bot
+    app: {{ .Release.Name }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: slack-bot
+      app: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: slack-bot
+        app: {{ .Release.Name }}
     spec:
       containers:
         - name: slack-bot
@@ -26,27 +26,37 @@ spec:
               value: {{ .Values.slackBot.slackAppToken }}
             - name: MONGO_URI
               value: {{ .Values.slackBot.mongoUri }}
-          volumeMounts:
-            - name: gcp-service-account
-              mountPath: /var/secrets/google
-              readOnly: true
-          env:
-            - name: GOOGLE_APPLICATION_CREDENTIALS
-              value: /var/secrets/google/service-account-key.json
             - name: ENCRYPTION_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.gcpServiceAccount.secretName }}
                   key: encryptionPassword
-      initContainers:
-        - name: decrypt-service-account-key
-          image: alpine
-          command: ["sh", "-c", "apk add openssl && openssl enc -d -aes-256-cbc -in /var/secrets/google/service-account-key.json.enc -out /var/secrets/google/service-account-key.json -k $ENCRYPTION_PASSWORD"]
+            - name: CONFIG_PATH
+              value: /app/config/config.yaml
           volumeMounts:
-            - name: gcp-service-account
-              mountPath: /var/secrets/google
-              readOnly: false
+            - name: config-volume
+              mountPath: /app/config
+              subPath: config.yaml
+      initContainers:
+        - name: decrypt-config
+          image: alpine
+          command: ["sh", "-c", "set -ex; apk add --no-cache openssl; echo 'Listing contents of /var/secrets/config:'; ls -l /var/secrets/config; echo 'Displaying contents of /var/secrets/config/config.yaml.enc:'; cat /var/secrets/config/config.yaml.enc; echo 'Decrypting the config file...'; openssl enc -d -aes-256-cbc -in /var/secrets/config/config.yaml.enc -out /app/config/config.yaml -k {{ .Values.botConfig.encryptionPassword }}; echo 'Displaying decrypted config file:'; cat /app/config/config.yaml; ls -lrt /root/"]
+          volumeMounts:
+            - name: config-secret
+              mountPath: /var/secrets/config
+              readOnly: true
+            - name: config-volume
+              mountPath: /app/config/
+              subPath: config.yaml
+          env:
+            - name: ENCRYPTION_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.botConfig.secretName }}
+                  key: encryptionPassword
       volumes:
-        - name: gcp-service-account
+        - name: config-secret
           secret:
-            secretName: {{ .Values.gcpServiceAccount.secretName }}
+            secretName: {{ .Values.botConfig.secretName }}
+        - name: config-volume
+          emptyDir: {}

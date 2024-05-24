@@ -23,23 +23,32 @@ spec:
             - name: gcp-service-account
               mountPath: /var/secrets/google
               readOnly: true
+            - name: decrypted-key
+              mountPath: /var/secrets/decrypted
+              readOnly: true
           env:
             - name: GOOGLE_APPLICATION_CREDENTIALS
-              value: /var/secrets/google/service-account-key.json
+              value: /var/secrets/decrypted/service-account-key.json
             - name: ENCRYPTION_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.gcpServiceAccount.secretName }}
-                  key: encryptionPassword
+              value: {{ .Values.gcpServiceAccount.encryptionPassword }}
       initContainers:
         - name: decrypt-service-account-key
           image: alpine
-          command: ["sh", "-c", "apk add openssl && openssl enc -d -aes-256-cbc -in /var/secrets/google/service-account-key.json.enc -out /var/secrets/google/service-account-key.json -k $ENCRYPTION_PASSWORD"]
+          command:
+            [
+              "sh", "-c",
+              "set -e; apk add --no-cache openssl; ls -l /var/secrets/google; cat /var/secrets/google/service-account-key.json.enc; openssl enc -d -aes-256-cbc -in /var/secrets/google/service-account-key.json.enc -out /var/secrets/decrypted/service-account-key.json -k {{ .Values.gcpServiceAccount.encryptionPassword }}"
+            ]
           volumeMounts:
             - name: gcp-service-account
               mountPath: /var/secrets/google
+              readOnly: true
+            - name: decrypted-key
+              mountPath: /var/secrets/decrypted
               readOnly: false
       volumes:
         - name: gcp-service-account
           secret:
             secretName: {{ .Values.gcpServiceAccount.secretName }}
+        - name: decrypted-key
+          emptyDir: {}

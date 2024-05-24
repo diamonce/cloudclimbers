@@ -4,8 +4,8 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"github.com/spf13/viper"
-	"os"
-	"path/filepath"
+	// "os"
+	// "path/filepath"
 )
 
 type Config struct {
@@ -43,14 +43,14 @@ type HashConfig struct {
 }
 
 func LoadConfig() (*Config, error) {
-	exePath, err := os.Executable()
-	if err != nil {
-		return nil, err
-	}
-	exeDir := filepath.Dir(exePath)
+	//	exePath, err := os.Executable()
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	exeDir := filepath.Dir(exePath)
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath(exeDir)
+	viper.AddConfigPath("/app/config/")
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, err
 	}

@@ -22,6 +22,10 @@ IMAGE_TAG=latest
 HELM_RELEASE_NAME=cloudclimbers-slack-bot
 HELM_NAMESPACE=cloudclimbers
 
+# Default architecture
+ARCH=amd64
+OS=linux
+
 # Ensure Go module is initialized
 go-init:
 	echo "==> Initializing Go module in $(MAIN_PACKAGE)..."
@@ -37,7 +41,7 @@ deps: go-init
 # Build main binary
 build: deps
 	echo "==> Building the binary..."
-	cd $(MAIN_PACKAGE) && go build -o "$(BINARY_NAME)" ./cmd/main.go
+	cd $(MAIN_PACKAGE) && GOOS=$(OS) GOARCH=$(ARCH) go build -o "$(BINARY_NAME)" ./cmd/main.go
 	echo "==> Build completed: $(BINARY_NAME)"
 
 # Run main binary
@@ -66,10 +70,10 @@ gcr-init:
 # Build Docker images
 docker-build: build
 	echo "==> Building Docker images..."
-	docker build -t $(MAIN_IMAGE_REPO):$(IMAGE_TAG) .
-	docker build -t $(CREATE_IMAGE_REPO):$(IMAGE_TAG) $(CREATE_PLUGIN_DIR)
-	docker build -t $(GET_IMAGE_REPO):$(IMAGE_TAG) $(GET_PLUGIN_DIR)
-	docker build -t $(DELETE_IMAGE_REPO):$(IMAGE_TAG) $(DELETE_PLUGIN_DIR)
+	docker buildx build --platform $(OS)/$(ARCH) -t $(MAIN_IMAGE_REPO):$(IMAGE_TAG) .
+	docker buildx build --platform $(OS)/$(ARCH) -t $(CREATE_IMAGE_REPO):$(IMAGE_TAG) $(CREATE_PLUGIN_DIR)
+	docker buildx build --platform $(OS)/$(ARCH) -t $(GET_IMAGE_REPO):$(IMAGE_TAG) $(GET_PLUGIN_DIR)
+	docker buildx build --platform $(OS)/$(ARCH) -t $(DELETE_IMAGE_REPO):$(IMAGE_TAG) $(DELETE_PLUGIN_DIR)
 	echo "==> Docker build completed"
 
 # Push Docker images to GCR
@@ -106,7 +110,7 @@ docker-compose-down:
 helm-repo-add:
 	helm repo add bitnami https://charts.bitnami.com/bitnami
 	helm repo add argo https://argoproj.github.io/argo-helm
-	helm repo update
+#	helm repo update
 
 # Helm dependency build
 helm-deps: helm-repo-add
@@ -115,6 +119,7 @@ helm-deps: helm-repo-add
 
 # Install Helm chart
 helm-install: helm-deps
+	- kubectl delete serviceaccount argocd --namespace cloudclimbers
 	helm install $(HELM_RELEASE_NAME) $(HELM_CHART_DIR) --namespace $(HELM_NAMESPACE) --create-namespace
 
 # Upgrade Helm chart
