@@ -65,10 +65,10 @@ main_buttons:
 ```
 
 ### 🍿 Getting Started
-Clone the Repository: Clone the Cloud Climbers Slack Bot repository to your local machine.
-Configure the Bot: Update the YAML configuration file with your Slack tokens, MongoDB URI, and plugin URLs.
-Run the Bot: Use Makefile to build and run the bot and its plugins.
-Develop Plugins: Create your plugins and register them in the YAML configuration file.
+- Clone the Repository: Clone the Cloud Climbers Slack Bot repository to your local machine.
+- Configure the Bot: Update the YAML configuration file with your Slack tokens, MongoDB URI, and plugin URLs.
+- Run the Bot: Use Makefile to build and run the bot and its plugins.
+- Develop Plugins: Create your plugins and register them in the YAML configuration file.
 
 ---
 
