@@ -5,6 +5,7 @@ import (
 	"cloudclimbers-slack-bot/internal/bot"
 	"cloudclimbers-slack-bot/internal/handlers"
 	"cloudclimbers-slack-bot/internal/utils"
+	"github.com/slack-go/slack"
 	"go.uber.org/zap"
 )
 
@@ -18,7 +19,10 @@ func main() {
 		logger.Fatal("Failed to load config", zap.Error(err))
 	}
 
-	eventHandler := handlers.NewEventHandler(cfg.Plugins)
+	// Initialize Slack API client
+	api := slack.New(cfg.SlackBotToken, slack.OptionAppLevelToken(cfg.SlackAppToken))
+
+	eventHandler := handlers.NewEventHandler(api, cfg.Plugins, logger)
 	slackBot := bot.NewBot(cfg, eventHandler)
 
 	if err := slackBot.Start(); err != nil {

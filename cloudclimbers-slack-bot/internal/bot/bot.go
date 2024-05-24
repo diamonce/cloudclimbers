@@ -218,7 +218,7 @@ func (b *Bot) handleBlockActions(callback slack.InteractionCallback) {
 		case "list_enabled_plugins":
 			b.mainPlugin.ListEnabledPlugins(callback)
 		case "help":
-			b.mainPlugin.HelpAction(callback)
+			b.mainPlugin.PublishHelp(callback)
 		default:
 			b.mainPlugin.ForwardAction(action.ActionID, callback)
 		}
