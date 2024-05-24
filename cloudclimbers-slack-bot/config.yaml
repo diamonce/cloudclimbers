@@ -1,11 +1,11 @@
 slack_app_token: ""
 slack_bot_token: ""
-mongo_uri: "mongodb://localhost:27017"  # Ensure this is correctly formatted
+mongo_uri: "mongodb://mongodb:27017"  # Ensure this is correctly formatted
 database_name: "cloudclimbers_db"
 
 plugins:
   create:
-    url: "http://127.0.0.1:8081/create"
+    url: "http://create-plugin:8081/create"
     buttons:
       - text: "Create Environment"
         action_id: "create_environment"
@@ -32,7 +32,7 @@ plugins:
       type: "SHA-256"
       value: "" # Will be calculated
   get:
-    url: "http://127.0.0.1:8082/get"
+    url: "http://get-plugin:8082/get"
     buttons:
       - text: "Get Environment Status"
         action_id: "get_environment_status"
@@ -51,7 +51,7 @@ plugins:
       type: "SHA-256"
       value: "" # Will be calculated
   delete:
-    url: "http://127.0.0.1:8083/delete"
+    url: "http://delete-plugin:8083/delete"
     buttons:
       - text: "Delete Environment"
         action_id: "delete_environment"
