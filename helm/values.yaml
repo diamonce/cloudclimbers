@@ -1,38 +1,67 @@
+# values.yaml
+
+# MongoDB configuration
 mongodb:
+  databaseName: cloudclimbers_db
+  replicaCount: 3
+  arbiter:
+    enabled: false
   auth:
-    username: admin
-    password: password
-    database: mydatabase
+    enabled: false
+  storage:
+    size: 10Gi
+    storageClassName: standard    
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: "4Gi"
+  credentials:
+    username: ""
+    password: ""
 
-create:
-  image:
-    repository: myrepo/create-plugin
-    tag: latest
+# Slack Bot configuration
+slackBot:
+  image: gcr.io/slack-id/cloudclimbers-slack-bot:latest
+  slackBotToken: ""
+  slackAppToken: ""
+  mongoUri: "mongodb://mongodb:27017/"
+  mongoDatabaseName: "cloudclimbers_db"
 
-get:
-  image:
-    repository: myrepo/get-plugin
-    tag: latest
+# Plugin configuration
+plugins:
+  create:
+    image: gcr.io/slack-id/cloudclimbers-slack-bot-create-plugin:latest
+    url: "http://create:8081/create"
+  get:
+    image: gcr.io/slack-id/cloudclimbers-slack-bot-get-plugin:latest
+    url: "http://get:8082/get"
+  delete:
+    image: gcr.io/slack-id/cloudclimbers-slack-bot-delete-plugin:latest
+    url: "http://delete:8083/delete"
 
-delete:
-  image:
-    repository: myrepo/delete-plugin
-    tag: latest
+# GCP Service Account
+gcpServiceAccount:
+  enabled: true
+  secretName: gcp-service-account-key
+  encryptionPassword: ""
 
-my-slack-bot:
-  image:
-    repository: myrepo/my-slack-bot
-    tag: latest
-  slackToken: "YOUR_SLACK_TOKEN"
-  mongoURI: "mongodb://admin:password@mongodb:27017/mydatabase"
-  pluginsConfig: |
-    plugins:
-      create:
-        url: "http://create:8081/create"
-      get:
-        url: "http://get:8082/get"
-      delete:
-        url: "http://delete:8083/delete"
-    main_buttons:
-      - text: "List Enabled Plugins"
-        action_id: "list_enabled_plugins"
+# GCP Service Account
+botConfig:
+  enabled: true
+  secretName: slack-bot-config
+  encryptionPassword: ""
+
+# ArgoCD configuration
+argo-cd:
+  dex:
+    enabled: false
+  notifications:
+    enabled: false
+  applicationSet:
+    enabled: false
+  server:
+    extraArgs:
+      - --insecure
