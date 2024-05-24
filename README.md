@@ -33,7 +33,7 @@ Here's how the magic happens behind the scenes when you interact with our Cloud 
 - **YAML**: For configuring plugins and their endpoints.
 - **JSON**: For the payloads sent between the bot and plugins.
 
-This setup allows for a highly flexible and extendable bot architecture, encouraging community contributions and plugin development in any programming language! 🌍👨‍💻👩‍💻
+This setup allows for a highly flexible and extendable bot architecture, encouraging community contributions! 🌍👨‍💻👩‍💻
 
 ### Example Plugin Configuration
 
@@ -68,7 +68,7 @@ main_buttons:
 Clone the Repository: Clone the Cloud Climbers Slack Bot repository to your local machine.
 Configure the Bot: Update the YAML configuration file with your Slack tokens, MongoDB URI, and plugin URLs.
 Run the Bot: Use Makefile to build and run the bot and its plugins.
-Develop Plugins: Create your plugins in any programming language and register them in the YAML configuration file.
+Develop Plugins: Create your plugins and register them in the YAML configuration file.
 
 ---
 
