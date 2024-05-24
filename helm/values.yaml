@@ -48,7 +48,7 @@ gcpServiceAccount:
   secretName: gcp-service-account-key
   encryptionPassword: ""
 
-# GCP Service Account
+# Bot config file
 botConfig:
   enabled: true
   secretName: slack-bot-config
