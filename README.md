@@ -2,21 +2,38 @@
 
 ## Key Features
 
-🚀 **Preview Environments**: The Cloud Climbers Slack Bot helps software teams increase their development velocity by reducing the time it takes to test and release new features. It allows for the creation, status check, and deletion of preview environments directly from Slack. And much more...
+🚀 **Preview Environments**: 
+- The Cloud Climbers Slack Bot helps software teams increase their development velocity by reducing the time it takes to test and release new features. It allows for the creation, status check, and deletion of preview environments directly from Slack. And much more...
 
-🧩 **Plugin Development**: The Cloud Climbers Slack Bot supports community contributions for plugin development in <span style="color:red">any programming language</span>. Whether you prefer Python, Go, JavaScript, or any other language, you can create plugins that interact with the bot through simple HTTP endpoints. Because plugins are Docker containers. 🤓
+🧩 **Plugin Development**:
+- The Cloud Climbers Slack Bot supports community contributions for plugin development in <span style="color:red">any programming language</span>. Whether you prefer Python, Go, JavaScript, or any other language, you can create plugins that interact with the bot through simple HTTP endpoints. Because plugins are Docker containers. 🤓
 
-🛠 **Extensible and Customizable**: The bot's architecture is designed to be extensible and customizable. Community members can develop and share plugins to extend the functionality of the bot, catering to specific needs and workflows. Add AI, cleanup, FLUX, Jenkins in 5 minutes. It is that easy.
+🛠 **Extensible and Customizable**: 
+- The bot's architecture is designed to be extensible and customizable. Community members can develop and share plugins to extend the functionality of the bot, catering to specific needs and workflows. Add AI, cleanup, FLUX, Jenkins in 5 minutes. It is that easy.
 
-🕹️ **Buttons in Slack** Not commands. Because buttons are more robust for user interfaces.
+🕹️ **Buttons in Slack** 
+- Not commands. Because buttons are more robust for user interfaces.
 
-🔐 **Secure** The only external connectivity bot has is websocket connection to Slack servers. 
+🔐 **Secure** 
+- The only external connectivity bot has is websocket connection to Slack servers. 
 
-🏗️ **Visual** We use ArgoCD to give visual representation on  what is happening in cluster.
+🏗️ **Visual** 
+- We use ArgoCD to give visual representation on  what is happening in cluster.
 
-## Interconnection Between Slack Bot and Plugins
 
-When a user interacts with the Cloud Climbers Slack Bot by clicking a button or typing a command, Slack sends the event to the bot via the Events API and Socket Mode using a WebSocket connection. The bot, implemented using Go, processes the event and determines the appropriate plugin based on the action ID specified in the event payload. The bot then sends an HTTP POST request to the plugin's endpoint, which is specified in a YAML configuration file. The plugin, which can be developed in any language and hosted as a container, receives the request, processes the command using provided variables, and responds with a JSON payload containing text and interactive elements like buttons or input fields. The bot processes this response, formats it into a Slack message, and sends it back to the user in the Slack channel, providing a seamless and interactive experience.
+## Interconnection Between Slack Bot and Plugins 🌐🤖✨
+
+Here's how the magic happens behind the scenes when you interact with our Cloud Climbers Slack Bot: When a user interacts with the Cloud Climbers Slack Bot by clicking a button or typing a command, Slack sends the event to the bot via the Events API and Socket Mode using a WebSocket connection. The bot, implemented using Go, processes the event and determines the appropriate plugin based on the action ID specified in the event payload. The bot then sends an HTTP POST request to the plugin's endpoint, which is specified in a YAML configuration file. The plugin, which can be developed in any language and hosted as a container, receives the request, processes the command using provided variables, and responds with a JSON payload containing text and interactive elements like buttons or input fields. The bot processes this response, formats it into a Slack message, and sends it back to the user in the Slack channel, providing a seamless and interactive experience.
+
+### Key Technologies and Protocols
+
+- **Slack Events API & Socket Mode**: To receive real-time events from Slack.
+- **Go**: For implementing the bot.
+- **HTTP/REST**: For communication between the bot and plugins.
+- **YAML**: For configuring plugins and their endpoints.
+- **JSON**: For the payloads sent between the bot and plugins.
+
+This setup allows for a highly flexible and extendable bot architecture, encouraging community contributions and plugin development in any programming language! 🌍👨‍💻👩‍💻
 
 ### Example Plugin Configuration
 
@@ -55,7 +72,7 @@ Develop Plugins: Create your plugins in any programming language and register th
 
 ---
 
-### 🌐 We are the "Cloud Climbers" - Hackathon Team
+### 🌐 We are the "Cloud Climbers" - Hackathon Team (Credits)
 
 ---
 
