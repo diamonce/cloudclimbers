@@ -1,22 +1,23 @@
 variable "project_id" {
-  description = "The project ID to deploy to."
+  description = "The ID of the GCP project."
   type        = string
+  default     = "slack-id"
 }
 
 variable "region" {
-  description = "The region to deploy to."
+  description = "The region where the GKE cluster will be deployed."
   type        = string
-  default     = "us-central1"
+  default     = "europe-central2-c"
 }
 
-variable "slack_token" {
-  description = "Slack bot token"
+variable "credentials_file" {
+  description = "Path to the GCP service account key file."
   type        = string
-  sensitive   = true
+  default     = "/Users/dmytrochernenko/.config/gcloud/slack-id-921f7b160345-tf.json"
 }
 
 variable "cluster_name" {
-  description = "The name of the Kubernetes cluster."
+  description = "The name of the GKE cluster."
   type        = string
   default     = "cloudclimbers-slack-bot-cluster"
 }
