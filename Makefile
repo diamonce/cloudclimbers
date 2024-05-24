@@ -6,13 +6,21 @@ MAIN_PACKAGE=./cloudclimbers-slack-bot
 CREATE_PLUGIN_DIR=./cloudclimbers-slack-bot/plugins/create
 GET_PLUGIN_DIR=./cloudclimbers-slack-bot/plugins/get
 DELETE_PLUGIN_DIR=./cloudclimbers-slack-bot/plugins/delete
+HELM_CHART_DIR=./helm
 
 # Docker image repositories and tags
-MAIN_IMAGE_REPO=dchernenko/cloudclimbers-slack-bot
-CREATE_IMAGE_REPO=dchernenko/cloudclimbers-slack-bot-create-plugin
-GET_IMAGE_REPO=dchernenko/cloudclimbers-slack-bot-get-plugin
-DELETE_IMAGE_REPO=dchernenko/cloudclimbers-slack-bot-delete-plugin
+PROJECT_ID=slack-id
+LOCATION=europe-central2
+GCR_REPO=gcr.io/$(PROJECT_ID)
+MAIN_IMAGE_REPO=$(GCR_REPO)/cloudclimbers-slack-bot
+CREATE_IMAGE_REPO=$(GCR_REPO)/cloudclimbers-slack-bot-create-plugin
+GET_IMAGE_REPO=$(GCR_REPO)/cloudclimbers-slack-bot-get-plugin
+DELETE_IMAGE_REPO=$(GCR_REPO)/cloudclimbers-slack-bot-delete-plugin
 IMAGE_TAG=latest
+
+# Helm release name and namespace
+HELM_RELEASE_NAME=cloudclimbers-slack-bot
+HELM_NAMESPACE=cloudclimbers
 
 # Ensure Go module is initialized
 go-init:
@@ -49,6 +57,12 @@ clean:
 	rm -f $(BINARY_NAME)
 	echo "==> Clean completed"
 
+# Create GCR repository if not exists
+gcr-init:
+	echo "==> Checking and creating GCR repository if it doesn't exist..."
+	gcloud auth configure-docker
+	gcloud services enable containerregistry.googleapis.com
+
 # Build Docker images
 docker-build: build
 	echo "==> Building Docker images..."
@@ -57,6 +71,15 @@ docker-build: build
 	docker build -t $(GET_IMAGE_REPO):$(IMAGE_TAG) $(GET_PLUGIN_DIR)
 	docker build -t $(DELETE_IMAGE_REPO):$(IMAGE_TAG) $(DELETE_PLUGIN_DIR)
 	echo "==> Docker build completed"
+
+# Push Docker images to GCR
+docker-push: gcr-init docker-build
+	echo "==> Pushing Docker images to GCR..."
+	docker push $(MAIN_IMAGE_REPO):$(IMAGE_TAG)
+	docker push $(CREATE_IMAGE_REPO):$(IMAGE_TAG)
+	docker push $(GET_IMAGE_REPO):$(IMAGE_TAG)
+	docker push $(DELETE_IMAGE_REPO):$(IMAGE_TAG)
+	echo "==> Docker images pushed to GCR"
 
 # Run Docker container for main application
 docker-run: docker-build
@@ -79,4 +102,16 @@ docker-compose-down:
 	docker-compose down
 	echo "==> Docker Compose down completed"
 
-.PHONY: go-init deps build run test clean docker-build docker-run docker-compose-build docker-compose-up docker-compose-down
+# Install Helm chart
+helm-install:
+	helm install $(HELM_RELEASE_NAME) $(HELM_CHART_DIR) --namespace $(HELM_NAMESPACE) --create-namespace
+
+# Upgrade Helm chart
+helm-upgrade:
+	helm upgrade $(HELM_RELEASE_NAME) $(HELM_CHART_DIR) --namespace $(HELM_NAMESPACE)
+
+# Uninstall Helm chart
+helm-uninstall:
+	helm uninstall $(HELM_RELEASE_NAME) --namespace $(HELM_NAMESPACE)
+
+.PHONY: go-init deps build run test clean docker-build docker-run docker-compose-build docker-compose-up docker-compose-down gcr-init gcr-push create-helm-files helm-install helm-upgrade helm-uninstall

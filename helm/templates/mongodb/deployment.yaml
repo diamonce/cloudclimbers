@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb
+  labels:
+    app: mongodb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+        - name: mongodb
+          image: {{ .Values.mongodb.image }}
+          ports:
+            - containerPort: 27017
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              value: {{ .Values.mongodb.credentials.username }}
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              value: {{ .Values.mongodb.credentials.password }}
+          volumeMounts:
+            - name: mongodb-data
+              mountPath: /data/db
+      volumes:
+        - name: mongodb-data
+          persistentVolumeClaim:
+            claimName: mongodb-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongodb-pvc
+  labels:
+    app: mongodb
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.mongodb.storage.size }}
+  storageClassName: {{ .Values.mongodb.storage.storageClassName }}

@@ -1,6 +1,0 @@
-apiVersion: v2
-name: mongodb
-description: A MongoDB chart
-type: application
-version: 9.2.1
-appVersion: "4.2.6"
