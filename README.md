@@ -160,6 +160,7 @@ mongodb-784c98f5bc-sz9mv                                     1/1     Running    
 #### 🕒 **Work Style**
 - **Asynchronous** - One Zoom call per week %)
 
+####  **Design Data**
 ####  **[Architecture decisions recod](/ADR)**
 ####  **[High-Level Design](/HLD)**
 
