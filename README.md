@@ -160,9 +160,9 @@ mongodb-784c98f5bc-sz9mv                                     1/1     Running    
 #### 🕒 **Work Style**
 - **Asynchronous** - One Zoom call per week %)
 
-####  **Design Data**
-####  **[Architecture decisions recod](/ADR)**
-####  **[High-Level Design](/HLD)**
+#### 🌐 **Design Data**
+- **[Architecture decisions recod](/ADR)**
+- **[High-Level Design](/HLD)**
 
 #### 📊 **Planning Style**
 - **Agile** - We plan in Sprints but use 1 Story Point = 1 Hour
