@@ -23,6 +23,7 @@
 🔐 **Secure** 
 - The only external connectivity bot has is websocket connection to Slack servers.
 
+📜 **Love logging** 
  ![Buttons](https://github.com/diamonce/cloudclimbers/blob/main/images/activity_logging.jpeg?raw=true)
 <img src="![Buttons]([https://github.com/diamonce/cloudclimbers/blob/main/images/activity_logging.jpeg?raw=true](https://github.com/diamonce/cloudclimbers/blob/main/images/activity_logging.jpeg?raw=true)">
 
@@ -114,6 +115,22 @@ main_buttons:
   - text: "Help"
     action_id: "help"
     emoji: ":information_source:"
+```
+
+### 🌊 Here is how typical bot deployment looks like
+```
+NAME                                                         READY   STATUS      RESTARTS   AGE
+cloudclimbers-slack-bot-argocd-application-controlle-0       1/1     Running     0          18h
+cloudclimbers-slack-bot-argocd-redis-5d7984fcbc-bjgfc        1/1     Running     0          18h
+cloudclimbers-slack-bot-argocd-redis-secret-init-jpdvc       0/1     Completed   0          23h
+cloudclimbers-slack-bot-argocd-repo-server-567fb87b4-8h46p   1/1     Running     0          18h
+cloudclimbers-slack-bot-argocd-server-6f9cf79dd4-hnl5q       1/1     Running     0          18h
+cloudclimbers-slack-bot-mongodb-785cf5489f-c656v             1/1     Running     0          18h
+cloudclimbers-slack-bot-slack-bot-6f85ffbc67-nmcrq           1/1     Running     0          18h
+create-plugin-7c96dc6989-xp6gd                               1/1     Running     0          18h
+delete-plugin-5857b5cf5-7svhl                                1/1     Running     0          18h
+get-plugin-bd8f5dd9b-smpzq                                   1/1     Running     0          18h
+mongodb-784c98f5bc-sz9mv                                     1/1     Running     0          18h
 ```
 
 ### 🍿 Getting Started
