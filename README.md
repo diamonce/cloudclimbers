@@ -3,7 +3,6 @@
 ![Preview Environments via Slack](https://github.com/diamonce/cloudclimbers/blob/main/images/about.jpeg?raw=true)
 <img src="![Preview Environments via Slack]([https://github.com/diamonce/cloudclimbers/blob/main/images/about.jpeg?raw=true](https://github.com/diamonce/cloudclimbers/blob/main/images/about.jpeg?raw=true)">
 
-
 ## Key Features
 
 🚀 **Preview Environments**: 
@@ -18,11 +17,23 @@
 🕹️ **Buttons in Slack** 
 - Not commands. Because buttons are more robust for user interfaces.
 
+![Buttons](https://github.com/diamonce/cloudclimbers/blob/main/images/help.jpeg?raw=true)
+<img src="![Buttons]([https://github.com/diamonce/cloudclimbers/blob/main/images/help.jpeg?raw=true](https://github.com/diamonce/cloudclimbers/blob/main/images/help.jpeg?raw=true)">
+
 🔐 **Secure** 
-- The only external connectivity bot has is websocket connection to Slack servers. 
+- The only external connectivity bot has is websocket connection to Slack servers.
+
+ ![Buttons](https://github.com/diamonce/cloudclimbers/blob/main/images/activity_logging.jpeg?raw=true)
+<img src="![Buttons]([https://github.com/diamonce/cloudclimbers/blob/main/images/activity_logging.jpeg?raw=true](https://github.com/diamonce/cloudclimbers/blob/main/images/activity_logging.jpeg?raw=true)">
 
 🏗️ **Visual** 
 - We use ArgoCD to give visual representation on  what is happening in cluster.
+
+![Buttons](https://github.com/diamonce/cloudclimbers/blob/main/images/argocd.png?raw=true)
+<img src="![Buttons]([https://github.com/diamonce/cloudclimbers/blob/main/images/argocd.jpeg?raw=true](https://github.com/diamonce/cloudclimbers/blob/main/images/argocd.jpeg?raw=true)">
+
+![Buttons](https://github.com/diamonce/cloudclimbers/blob/main/images/argo2.png?raw=true)
+<img src="![Buttons]([https://github.com/diamonce/cloudclimbers/blob/main/images/argo2.jpeg?raw=true](https://github.com/diamonce/cloudclimbers/blob/main/images/argo2.jpeg?raw=true)">
 
 
 ## Interconnection Between Slack Bot and Plugins 🌐🤖✨
