@@ -1,5 +1,5 @@
 # Choosing ArgoCD over Flux for Slack Bot Deployment
-
+# 22.05.2024
 ## Context
 
 Our organization is operating under a very tight timeline, with only two weeks to develop the Slack bot. Given this constraint, it is essential to select tools and technologies that our team is already familiar with to ensure efficient and timely delivery. 
@@ -30,3 +30,5 @@ We will use ArgoCD for the continuous deployment deployment of preview environme
 - **Dependency on ArgoCD**: Our decision to use ArgoCD means we are reliant on its ecosystem, which could pose challenges if there are any changes or issues with the tool in the future.
 
 Overall, this decision aligns with our current business priorities and technical constraints, ensuring that we can deliver the Slack bot on time while maintaining a manageable level of complexity.
+
+**In future, Flux should be analyzed again, as Flux offers security benefits, as no commands from bot are runned on Kubernetes cluster**
