@@ -178,3 +178,6 @@ mongodb-784c98f5bc-sz9mv                                     1/1     Running    
 #### Quick Start
 Start your day with setting up the environment
 
+# brew install pre-commit
+# pre-commit install
+# pre-commit run --all-files
