@@ -1,5 +1,9 @@
 # Cloud Climbers Slack Bot
 
+![Preview Environments via Slack](https://github.com/diamonce/cloudclimbers/blob/main/images/about.jpeg?raw=true)
+<img src="![Preview Environments via Slack]([https://github.com/diamonce/cloudclimbers/blob/main/images/about.jpeg?raw=true](https://github.com/diamonce/cloudclimbers/blob/main/images/about.jpeg?raw=true)">
+
+
 ## Key Features
 
 🚀 **Preview Environments**: 
