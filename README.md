@@ -40,20 +40,57 @@ This setup allows for a highly flexible and extendable bot architecture, encoura
 ```yaml
 plugins:
   create:
-    url: "http://localhost:8081/create"
+    url: "http://create-plugin:8081/create"
     buttons:
       - text: "Create Environment"
         action_id: "create_environment"
+        emoji: ":hammer_and_wrench:"  # Emoji for creating an environment
+    commands: |
+      kubectl create namespace ${NAMESPACE}
+      kubectl port-forward service/argocd-service-server -n argocd 8080:443
+      argocd login --insecure --grpc-web localhost:8080 --username admin --password ${ARGOCD_PASSWORD}
+      argocd app create ${DEPLOYMENT_NAME} \
+        --repo ${REPO_NAME} \
+        --path ${HELM_PATH} \
+        --dest-server https://kubernetes.default.svc \
+        --dest-namespace ${NAMESPACE} \
+        --helm-set-string service.port=${SERVICE_PORT} \
+        --revision "${REVISION}"
+    variables:
+      NAMESPACE: ""
+      DEPLOYMENT_NAME: ""
+      REPO_NAME: ""
+      SERVICE_PORT: ""
+      REVISION: ""
+      ARGOCD_PASSWORD: ""
+    hash:
+      type: "SHA-256"
+      value: "" # Will be calculated
   get:
-    url: "http://localhost:8082/get"
+    url: "http://get-plugin:8082/get"
     buttons:
       - text: "Get Environment Status"
         action_id: "get_environment_status"
+        emoji: ":mag:"  # Emoji for getting status
+    commands: |
+      kubectl get pods -n ${NAMESPACE} -o wide
+      kubectl describe pods -n ${NAMESPACE}
+      kubectl get all -n ${NAMESPACE}
+      kubectl get deployment ${DEPLOYMENT_NAME} -n ${NAMESPACE}
+      kubectl describe deployment ${DEPLOYMENT_NAME} -n ${NAMESPACE}
+      kubectl get events -n ${NAMESPACE}
+    variables:
+      NAMESPACE: "value1"
+      DEPLOYMENT_NAME: "value2"
+    hash:
+      type: "SHA-256"
+      value: "" # Will be calculated
   delete:
-    url: "http://localhost:8083/delete"
+    url: "http://delete-plugin:8083/delete"
     buttons:
       - text: "Delete Environment"
         action_id: "delete_environment"
+        emoji: ":wastebasket:"  # Emoji for deleting an environment
 
 main_buttons:
   - text: "List Enabled Plugins"
