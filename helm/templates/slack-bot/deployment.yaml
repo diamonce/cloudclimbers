@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-slack-bot
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: slack-bot
+          image: {{ .Values.slackBot.image }}
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SLACK_BOT_TOKEN
+              value: {{ .Values.slackBot.slackBotToken }}
+            - name: SLACK_APP_TOKEN
+              value: {{ .Values.slackBot.slackAppToken }}
+            - name: MONGO_URI
+              value: {{ .Values.slackBot.mongoUri }}
+            - name: ENCRYPTION_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.gcpServiceAccount.secretName }}
+                  key: encryptionPassword
+            - name: CONFIG_PATH
+              value: /app/config/config.yaml
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config
+              subPath: config.yaml
+      initContainers:
+        - name: decrypt-config
+          image: alpine
+          command: ["sh", "-c", "set -ex; apk add --no-cache openssl; echo 'Listing contents of /var/secrets/config:'; ls -l /var/secrets/config; echo 'Displaying contents of /var/secrets/config/config.yaml.enc:'; cat /var/secrets/config/config.yaml.enc; echo 'Decrypting the config file...'; openssl enc -d -aes-256-cbc -in /var/secrets/config/config.yaml.enc -out /app/config/config.yaml -k {{ .Values.botConfig.encryptionPassword }}; echo 'Displaying decrypted config file:'; cat /app/config/config.yaml; ls -lrt /root/"]
+          volumeMounts:
+            - name: config-secret
+              mountPath: /var/secrets/config
+              readOnly: true
+            - name: config-volume
+              mountPath: /app/config/
+              subPath: config.yaml
+          env:
+            - name: ENCRYPTION_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.botConfig.secretName }}
+                  key: encryptionPassword
+      volumes:
+        - name: config-secret
+          secret:
+            secretName: {{ .Values.botConfig.secretName }}
+        - name: config-volume
+          emptyDir: {}
