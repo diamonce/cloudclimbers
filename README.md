@@ -147,17 +147,22 @@ mongodb-784c98f5bc-sz9mv                                     1/1     Running    
 
 #### 🚀 **Members**
 
-- **Dmytro Chernenko** (Team Lead)
+- [**Dmytro Chernenko**](https://github.com/diamonce) (Team Lead)
 - **Vladyslav Plaksa**
 - **Svitlana Dmytrenko**
-- **Denis Klopotovskis**
-- **Andrij Zelenyy**
+- [**Denis Klopotovskis**](https://github.com/denisklp)
+- [**Andrij Zelenyy**](https://github.com/AZelyony)
+
 
 #### 🤖 **Product Focus**
 - **Artificial Intelligence (AI)**
 
 #### 🕒 **Work Style**
 - **Asynchronous** - One Zoom call per week %)
+
+#### 🌐 **Design Data**
+- **[Architecture decisions recod](/ADR)**
+- **[High-Level Design](/HLD)**
 
 #### 📊 **Planning Style**
 - **Agile** - We plan in Sprints but use 1 Story Point = 1 Hour
