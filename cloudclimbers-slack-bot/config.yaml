@@ -11,16 +11,33 @@ plugins:
         action_id: "create_environment"
         emoji: ":hammer_and_wrench:"  # Emoji for creating an environment
     commands: |
-      kubectl create namespace ${NAMESPACE}
-      kubectl port-forward service/argocd-service-server -n argocd 8080:443
-      argocd login --insecure --grpc-web localhost:8080 --username admin --password ${ARGOCD_PASSWORD}
+      # Check variables
+      if [ -z "${NAMESPACE}" ] || [ -z "${DEPLOYMENT_NAME}" ] || [ -z "${REPO_NAME}" ] || [ -z "${SERVICE_PORT}" ] || [ -z "${REVISION}" ] || [ -z "${ARGOCD_PASSWORD}" ]; then
+        echo "Error: One or more required variables are not set."
+        exit 1
+      fi
+
+      # Create namespace
+      kubectl create namespace ${NAMESPACE} || { echo "Failed to create namespace"; exit 1; }
+
+      # Make port-forward для ArgoCD
+      kubectl port-forward service/argocd-service-server -n argocd 8080:443 &
+      sleep 3
+
+      # Connect to ArgoCD
+      argocd login --insecure --grpc-web localhost:8080 --username admin --password ${ARGOCD_PASSWORD} || { echo "Failed to login to ArgoCD"; exit 1; }
+
+      # Create app with ArgoCD
       argocd app create ${DEPLOYMENT_NAME} \
         --repo ${REPO_NAME} \
         --path ${HELM_PATH} \
         --dest-server https://kubernetes.default.svc \
         --dest-namespace ${NAMESPACE} \
         --helm-set-string service.port=${SERVICE_PORT} \
-        --revision "${REVISION}"
+        --revision "${REVISION}" || { echo "Failed to create ArgoCD application"; exit 1; }
+
+      # Check app status
+      argocd app wait ${DEPLOYMENT_NAME} --health --timeout 600 || { echo "Application did not become healthy"; exit 1; }
     variables:
       NAMESPACE: ""
       DEPLOYMENT_NAME: ""
@@ -38,6 +55,11 @@ plugins:
         action_id: "get_environment_status"
         emoji: ":mag:"  # Emoji for getting status
     commands: |
+      # Check variables
+      if [ -z "${NAMESPACE}" ] || [ -z "${DEPLOYMENT_NAME}" ] ; then
+        echo "Error: One or more required variables are not set."
+        exit 1
+      fi    
       kubectl get pods -n ${NAMESPACE} -o wide
       kubectl describe pods -n ${NAMESPACE}
       kubectl get all -n ${NAMESPACE}
