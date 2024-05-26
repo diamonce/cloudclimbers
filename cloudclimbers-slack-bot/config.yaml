@@ -56,6 +56,12 @@ plugins:
       - text: "Delete Environment"
         action_id: "delete_environment"
         emoji: ":wastebasket:"  # Emoji for deleting an environment
+  expertAiModel:
+    url: "http://expert-ai-model:8084/expert-ai-model"
+    buttons:
+      - text: "Ask AI"
+        action_id: "ask_ai"
+        emoji: ":robot_face:"  # Emoji for asking AI
 
 main_buttons:
   - text: "List Enabled Plugins"

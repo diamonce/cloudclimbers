@@ -10,7 +10,7 @@ mongodb:
     enabled: false
   storage:
     size: 10Gi
-    storageClassName: standard    
+    storageClassName: standard
   resources:
     requests:
       cpu: 100m
@@ -41,6 +41,13 @@ plugins:
   delete:
     image: gcr.io/slack-id/cloudclimbers-slack-bot-delete-plugin:latest
     url: "http://delete:8083/delete"
+  expertAiModel:
+    image: gcr.io/slack-id/cloudclimbers-slack-bot-expert-ai-plugin:latest
+    url: "http://expert-ai-model:8084/expert-ai-model"
+    cloudflare:
+      accountId: ""
+      authToken: ""
+
 
 # GCP Service Account
 gcpServiceAccount:
