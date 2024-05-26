@@ -8,6 +8,10 @@ GET_PLUGIN_DIR=./cloudclimbers-slack-bot/plugins/get
 DELETE_PLUGIN_DIR=./cloudclimbers-slack-bot/plugins/delete
 HELM_CHART_DIR=./helm
 
+# Variables for the Cloudflare AI plugin
+CLOUDFLARE_AI_PLUGIN_DIR=./cloudclimbers-slack-bot/plugins/expert_ai_model
+CLOUDFLARE_AI_IMAGE_REPO=$(GCR_REPO)/cloudclimbers-slack-bot-expert-ai-plugin
+
 # Docker image repositories and tags
 PROJECT_ID=slack-id
 LOCATION=europe-central2
@@ -74,6 +78,7 @@ docker-build: build
 	docker buildx build --platform $(OS)/$(ARCH) -t $(CREATE_IMAGE_REPO):$(IMAGE_TAG) $(CREATE_PLUGIN_DIR)
 	docker buildx build --platform $(OS)/$(ARCH) -t $(GET_IMAGE_REPO):$(IMAGE_TAG) $(GET_PLUGIN_DIR)
 	docker buildx build --platform $(OS)/$(ARCH) -t $(DELETE_IMAGE_REPO):$(IMAGE_TAG) $(DELETE_PLUGIN_DIR)
+	docker buildx build --platform $(OS)/$(ARCH) -t $(CLOUDFLARE_AI_IMAGE_REPO):$(IMAGE_TAG) $(CLOUDFLARE_AI_PLUGIN_DIR)
 	echo "==> Docker build completed"
 
 # Push Docker images to GCR
@@ -83,6 +88,7 @@ docker-push: gcr-init docker-build
 	docker push $(CREATE_IMAGE_REPO):$(IMAGE_TAG)
 	docker push $(GET_IMAGE_REPO):$(IMAGE_TAG)
 	docker push $(DELETE_IMAGE_REPO):$(IMAGE_TAG)
+	docker push $(CLOUDFLARE_AI_IMAGE_REPO):$(IMAGE_TAG)
 	echo "==> Docker images pushed to GCR"
 
 # Run Docker container for main application

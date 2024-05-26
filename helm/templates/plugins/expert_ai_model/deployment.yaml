@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: expert-ai-model
+  labels:
+    app: expert-ai-model
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: expert-ai-model
+  template:
+    metadata:
+      labels:
+        app: expert-ai-model
+    spec:
+      containers:
+        - name: expert-ai-model
+          image: {{ .Values.plugins.expertAiModel.image }}
+          ports:
+            - containerPort: 8084
+          volumeMounts:
+            - name: gcp-service-account
+              mountPath: /var/secrets/google
+              readOnly: true
+            - name: decrypted-key
+              mountPath: /var/secrets/decrypted
+              readOnly: true
+          env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /var/secrets/decrypted/service-account-key.json
+            - name: ENCRYPTION_PASSWORD
+              value: {{ .Values.gcpServiceAccount.encryptionPassword }}
+            - name: CLOUDFLARE_ACCOUNT_ID
+              value: {{ .Values.plugins.expertAiModel.cloudflare.accountId }}
+            - name: CLOUDFLARE_AUTH_TOKEN
+              value: {{ .Values.plugins.expertAiModel.cloudflare.authToken }}
+      initContainers:
+        - name: decrypt-config
+          image: alpine
+          command:
+            [
+              "sh", "-c",
+              "set -e; apk add --no-cache openssl; ls -l /var/secrets/google; openssl enc -d -aes-256-cbc -in /var/secrets/google/service-account-key.json.enc -out /var/secrets/decrypted/service-account-key.json -k {{ .Values.gcpServiceAccount.encryptionPassword }}"
+            ]
+          volumeMounts:
+            - name: gcp-service-account
+              mountPath: /var/secrets/google
+              readOnly: true
+            - name: decrypted-key
+              mountPath: /var/secrets/decrypted
+              readOnly: false
+      volumes:
+        - name: gcp-service-account
+          secret:
+            secretName: {{ .Values.gcpServiceAccount.secretName }}
+        - name: decrypted-key
+          emptyDir: {}
