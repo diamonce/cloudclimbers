@@ -47,7 +47,7 @@ def ask_ai():
             "buttons": [
                 {
                     "type": "button",
-                    "text": "Submit Variables",
+                    "text": "Submit",
                     "action_id": "ask_ai",
                 }
             ],
@@ -95,7 +95,10 @@ def ask_ai():
 
     # Return the AI response to the user in Slack
     response = {
-        "text": "Here's the response from Cloud Climbers AI: " + ai_content,
+        "text": "Your question was: "
+        + question
+        + ".\n Here's the response from Cloud Climbers AI on your question: "
+        + ai_content,
         "attachments": [],
         "buttons": [
             {
