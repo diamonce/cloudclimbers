@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - Github_actions
+      - 'Github_actions'
   
 jobs:
   deploy:
