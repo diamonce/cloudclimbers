@@ -13,3 +13,5 @@ jobs:
         run: make go-init
       - name: Install dependencies
         run: make deps
+      - name: Create the build
+        run: make build
