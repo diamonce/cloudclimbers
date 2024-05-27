@@ -1,10 +1,48 @@
 from flask import Flask, request, jsonify
 import logging
+import subprocess
 
 app = Flask(__name__)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
+
+
+def execute_command(command):
+    print("function to execute commands is here")
+    try:
+        # Run the command and capture the output and errors
+        result = subprocess.run(
+            command,
+            check=True,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        # Decode the output and errors from bytes to string
+        stdout = result.stdout.decode("utf-8")
+        stderr = result.stderr.decode("utf-8")
+
+        # Print the standard output
+        if stdout:
+            print("Output:")
+            print(stdout)
+
+        # Print the standard error
+        if stderr:
+            print("Errors:")
+            print(stderr)
+
+        return stdout, stderr
+    except subprocess.CalledProcessError as e:
+        # Handle the error
+        print(f"Command '{command}' failed with return code {e.returncode}")
+        print(f"Error output: {e.stderr.decode('utf-8')}")
+        return None, e.stderr.decode("utf-8")
+    except Exception as e:
+        # Handle unexpected exceptions
+        print(f"An unexpected error occurred: {str(e)}")
+        return None, str(e)
 
 
 @app.route("/create", methods=["POST"])
@@ -89,9 +127,14 @@ def create_environment():
     # For demonstration, just printing the commands
     print("Commands to be executed:", commands)
 
+    # os.exec(commands)
+    stdout, stderr = execute_command(commands)
+
     response = {
         "text": "Environment created successfully!",
-        "attachments": [{"text": "Details about the created environment..."}],
+        "attachments": [
+            {"text": "Details about the created environment..." + str(stdout)}
+        ],
         "buttons": [
             {
                 "type": "button",
