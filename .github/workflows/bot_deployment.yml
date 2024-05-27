@@ -11,3 +11,5 @@ jobs:
         uses: actions/checkout@v4.0.0
       - name: Initialize Go
         run: make go-init
+      - name: Install dependencies
+        run: make deps
