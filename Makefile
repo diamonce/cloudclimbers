@@ -3,7 +3,8 @@ MAKEFLAGS += -x
 # Define variables
 BINARY_NAME=cloudclimbers-slack-bot-runner
 MAIN_PACKAGE=./cloudclimbers-slack-bot
-CREATE_PLUGIN_DIR=./cloudclimbers-slack-bot/plugins/create
+ARGO_CREATE_PLUGIN_DIR=./cloudclimbers-slack-bot/plugins/create_argo
+FLUX_CREATE_PLUGIN_DIR=./cloudclimbers-slack-bot/plugins/create_flux
 GET_PLUGIN_DIR=./cloudclimbers-slack-bot/plugins/get
 DELETE_PLUGIN_DIR=./cloudclimbers-slack-bot/plugins/delete
 HELM_CHART_DIR=./helm
@@ -17,7 +18,8 @@ PROJECT_ID=slack-id
 LOCATION=europe-central2
 GCR_REPO=gcr.io/$(PROJECT_ID)
 MAIN_IMAGE_REPO=$(GCR_REPO)/cloudclimbers-slack-bot
-CREATE_IMAGE_REPO=$(GCR_REPO)/cloudclimbers-slack-bot-create-plugin
+ARGO_CREATE_IMAGE_REPO=$(GCR_REPO)/cloudclimbers-slack-bot-create-argo-plugin
+FLUX_CREATE_IMAGE_REPO=$(GCR_REPO)/cloudclimbers-slack-bot-create-flux-plugin
 GET_IMAGE_REPO=$(GCR_REPO)/cloudclimbers-slack-bot-get-plugin
 DELETE_IMAGE_REPO=$(GCR_REPO)/cloudclimbers-slack-bot-delete-plugin
 IMAGE_TAG=latest
@@ -75,7 +77,8 @@ gcr-init:
 docker-build: build
 	echo "==> Building Docker images..."
 	docker buildx build --platform $(OS)/$(ARCH) -t $(MAIN_IMAGE_REPO):$(IMAGE_TAG) .
-	docker buildx build --platform $(OS)/$(ARCH) -t $(CREATE_IMAGE_REPO):$(IMAGE_TAG) $(CREATE_PLUGIN_DIR)
+	docker buildx build --platform $(OS)/$(ARCH) -t $(ARGO_CREATE_IMAGE_REPO):$(IMAGE_TAG) $(ARGO_CREATE_PLUGIN_DIR)
+	docker buildx build --platform $(OS)/$(ARCH) -t $(FLUX_CREATE_IMAGE_REPO):$(IMAGE_TAG) $(FLUX_CREATE_PLUGIN_DIR)
 	docker buildx build --platform $(OS)/$(ARCH) -t $(GET_IMAGE_REPO):$(IMAGE_TAG) $(GET_PLUGIN_DIR)
 	docker buildx build --platform $(OS)/$(ARCH) -t $(DELETE_IMAGE_REPO):$(IMAGE_TAG) $(DELETE_PLUGIN_DIR)
 	docker buildx build --platform $(OS)/$(ARCH) -t $(CLOUDFLARE_AI_IMAGE_REPO):$(IMAGE_TAG) $(CLOUDFLARE_AI_PLUGIN_DIR)
@@ -85,7 +88,8 @@ docker-build: build
 docker-push: gcr-init docker-build
 	echo "==> Pushing Docker images to GCR..."
 	docker push $(MAIN_IMAGE_REPO):$(IMAGE_TAG)
-	docker push $(CREATE_IMAGE_REPO):$(IMAGE_TAG)
+	docker push $(ARGO_CREATE_IMAGE_REPO):$(IMAGE_TAG)
+	docker push $(FLUX_CREATE_IMAGE_REPO):$(IMAGE_TAG)
 	docker push $(GET_IMAGE_REPO):$(IMAGE_TAG)
 	docker push $(DELETE_IMAGE_REPO):$(IMAGE_TAG)
 	docker push $(CLOUDFLARE_AI_IMAGE_REPO):$(IMAGE_TAG)
