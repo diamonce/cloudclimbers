@@ -4,3 +4,10 @@ on:
       - main
       - Github_actions
   
+jobs:
+  deploy:
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Initialize Go
+        run: make go-init
