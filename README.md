@@ -2,20 +2,34 @@
 
 ![Preview Environments via Slack](images/about.png)
 
-## Key Features
 
-🚀 **Preview Environments**: 
-- The Cloud Climbers Slack Bot helps software teams increase their development velocity by reducing the time it takes to test and release new features. It allows for the creation, status check, and deletion of preview environments directly from Slack. And much more...
+
+##
+## 🌐 **Design Data**
+- **[Architecture decisions recod](/ADR)**
+- **[High-Level Design](/HLD/high-level-design.md)**
+- **[Plugins explained](/plugins-expl)**
+
+
+##
+## Main goal
+🚀 **Easily created Preview Environments**: 
+- The Cloud Climbers Slack Bot helps software teams increase their development velocity by reducing the time it takes to test and release new features. It allows for the creation, status check, and deletion of preview environments for specific application version directly from Slack. 
+
+
+
+##
+## Key Features
 
 🧩 **Modern Approach**:
 - Utilizes a "best-practices" pull GitOps strategy with Flux, ensuring secure, standardized operations.
 
-🏗️ **AI** 
+🤖 **Artificial Intelligence** 
 - Bot has AI plugin augmented with Kubernetes environment preview status and other data to help developer understand possible issues, get useful stats etc.
-Image to illustrate AI
-![Image to illustrate AI](images/ai.png)
+<!-- Image to illustrate AI
+![Image to illustrate AI](images/ai.png) -->
 
-🧩 **Plugin Development**:
+🧩 **Language agnostic**:
 - The Cloud Climbers Slack Bot supports community contributions for plugin development in <span style="color:red">any programming language</span>. Whether you prefer Python, Go, JavaScript, or any other language, you can create plugins that interact with the bot through simple HTTP endpoints. Because plugins are Docker containers. 🤓
 
 🛠 **Extensible and Customizable**: 
@@ -27,15 +41,14 @@ Image to illustrate AI
 🔐 **Secure** 
 - The only external connectivity bot has is websocket connection to Slack servers.
 
-
+##
 ## **📜 Love logging** 
  ![Buttons](images/activity_logging.jpeg)
 
 
-## Interconnection Between Slack Bot and Plugins 🌐🤖✨
 
-Here's how the magic happens behind the scenes when you interact with our Cloud Climbers Slack Bot: When a user clicks a button or type a command, Slack sends the event to the bot via the Events API and Socket Mode using a WebSocket connection. The bot, implemented using Go, processes the event and determines the appropriate plugin based on the action ID specified in the event payload. The bot then sends an HTTP POST request to the plugin's endpoint, which is specified in a YAML configuration file. The plugin, which can be developed in any language and hosted as a container, receives the request, processes the command using provided variables, and responds with a JSON payload containing text and interactive elements like buttons or input fields. The bot processes this response, formats it into a Slack message, and sends it back to the user in the Slack channel, providing a seamless and interactive experience.
 
+##
 ### Key Technologies and Protocols
 
 - **Slack Events API & Socket Mode**: To receive real-time events from Slack.
@@ -43,14 +56,13 @@ Here's how the magic happens behind the scenes when you interact with our Cloud 
 - **HTTP/REST**: For communication between the bot and plugins.
 - **YAML**: For configuring plugins and their endpoints.
 - **JSON**: For the payloads sent between the bot and plugins.
+- **FLUX**: Heart of environment creation.
 
 This setup allows for a highly flexible and extendable bot architecture, encouraging community contributions! 🌍👨‍💻👩‍💻
 
-### Example Plugin Configuration
+---
 
----------
-
-
+##
 ### 🍿 Getting Started
 - Clone the Repository: Clone the Cloud Climbers Slack Bot repository to your local machine.
 - Configure the Bot: Update the YAML configuration file with your Slack tokens, MongoDB URI, and plugin URLs.
@@ -58,7 +70,7 @@ This setup allows for a highly flexible and extendable bot architecture, encoura
 - Develop Plugins: Create your plugins and register them in the YAML configuration file.
 
 ---
-
+##
 ### 🌐 We are the "Cloud Climbers" - Hackathon Team (Credits)
 
 ---
@@ -72,16 +84,9 @@ This setup allows for a highly flexible and extendable bot architecture, encoura
 - [**Andrij Zelenyy**](https://github.com/AZelyony)
 
 
-#### 🤖 **Product Focus**
-- **Artificial Intelligence (AI)**
 
 #### 🕒 **Work Style**
 - **Asynchronous** - One Zoom call per week %)
-
-#### 🌐 **Design Data**
-- **[Architecture decisions recod](/ADR)**
-- **[High-Level Design](/HLD)**
-- **[Plugins explained](/plugins-expl)**
 
 #### 📊 **Planning Style**
 - **Agile** - We plan in Sprints but use 1 Story Point = 1 Hour
@@ -95,6 +100,7 @@ This setup allows for a highly flexible and extendable bot architecture, encoura
 - **Diagrams:** We use Miro boards [Miro](https://miro.com/)
 - **Chat:** Telegram Group
 
+##
 #### Quick Start
 Start your day with setting up the environment
 
