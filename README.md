@@ -7,8 +7,13 @@
 🚀 **Preview Environments**: 
 - The Cloud Climbers Slack Bot helps software teams increase their development velocity by reducing the time it takes to test and release new features. It allows for the creation, status check, and deletion of preview environments directly from Slack. And much more...
 
-🧩 **Up-to-date approach**:
-- Implements "best-practices" pull GitOps approach using Flux. This allows to use secure and standartized operations.
+🧩 **Modern Approach**:
+- Utilizes a "best-practices" pull GitOps strategy with Flux, ensuring secure, standardized operations.
+
+🏗️ **AI** 
+- Bot has AI plugin augmented with Kubernetes environment preview status and other data to help developer understand possible issues, get useful stats etc.
+Image to illustrate AI
+![Image to illustrate AI](images/ai.png)
 
 🧩 **Plugin Development**:
 - The Cloud Climbers Slack Bot supports community contributions for plugin development in <span style="color:red">any programming language</span>. Whether you prefer Python, Go, JavaScript, or any other language, you can create plugins that interact with the bot through simple HTTP endpoints. Because plugins are Docker containers. 🤓
@@ -19,17 +24,11 @@
 🕹️ **Buttons in Slack** 
 - Not commands. Because buttons are more robust for user interfaces.
 
-
 🔐 **Secure** 
 - The only external connectivity bot has is websocket connection to Slack servers.
 
-🏗️ **AI** 
-- Bot has AI plugin augmented with Kubernetes environment preview status and other data to help developer understand possible issues, get useful stats etc.
-Image to illustrate AI
-![Image to illustrate AI](images/ai.png)
 
-
-📜 **Love logging** 
+## **📜 Love logging** 
  ![Buttons](images/activity_logging.jpeg)
 
 
