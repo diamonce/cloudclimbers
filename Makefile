@@ -52,6 +52,15 @@ deps: go-init
 	cd $(MAIN_PACKAGE) && go mod tidy
 	echo "==> Dependencies downloaded"
 
+# Build create_flux plugin
+build-create-flux:
+	echo "==> Building the create_flux plugin..."
+	- cp $(MAIN_PACKAGE)/go.mod $(FLUX_CREATE_PLUGIN_DIR)
+	- cp $(MAIN_PACKAGE)/go.sum $(FLUX_CREATE_PLUGIN_DIR)
+	cd $(FLUX_CREATE_PLUGIN_DIR) && go mod tidy
+	cd $(FLUX_CREATE_PLUGIN_DIR) && GOOS=$(OS) GOARCH=$(ARCH) go build -o create_flux ./create_plugin.go
+	echo "==> Build completed: create_flux"
+
 # Build main binary
 build: deps
 	echo "==> Building the binary..."
@@ -82,7 +91,7 @@ gcr-init:
 	gcloud services enable containerregistry.googleapis.com
 
 # Build Docker images
-docker-build: build
+docker-build: build build-create-flux
 	echo "==> Building Docker images..."
 	docker buildx build --platform $(OS)/$(ARCH) -t $(MAIN_IMAGE_REPO):$(IMAGE_TAG) .
 	docker buildx build --platform $(OS)/$(ARCH) -t $(ARGO_CREATE_IMAGE_REPO):$(IMAGE_TAG) $(ARGO_CREATE_PLUGIN_DIR)
@@ -164,4 +173,4 @@ flux-install:
 flux-uninstall:
 	flux uninstall --silent --namespace=flux-system
 
-.PHONY: go-init deps build run test clean docker-build docker-run docker-compose-build docker-compose-up docker-compose-down gcr-init gcr-push helm-deps helm-install helm-upgrade helm-uninstall helm-repo-add flux-install
+.PHONY: go-init deps build run test clean docker-build docker-run docker-compose-build docker-compose-up docker-compose-down gcr-init gcr-push helm-deps helm-install helm-upgrade helm-uninstall helm-repo-add flux-install build-create-flux
