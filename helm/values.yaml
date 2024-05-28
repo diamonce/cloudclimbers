@@ -32,9 +32,12 @@ slackBot:
 
 # Plugin configuration
 plugins:
-  create:
-    image: gcr.io/slack-id/cloudclimbers-slack-bot-create-plugin:latest
-    url: "http://create:8081/create"
+  create_argo:
+    image: gcr.io/slack-id/cloudclimbers-slack-bot-create-argo-plugin:latest
+    url: "http://create-argo:8081/create"
+  create_flux:
+    image: gcr.io/slack-id/cloudclimbers-slack-bot-create-flux-plugin:latest
+    url: "http://create-flux:8085/create"
   get:
     image: gcr.io/slack-id/cloudclimbers-slack-bot-get-plugin:latest
     url: "http://get:8082/get"

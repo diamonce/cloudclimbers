@@ -4,11 +4,11 @@ mongo_uri: "mongodb://mongodb:27017"  # Ensure this is correctly formatted
 database_name: "cloudclimbers_db"
 
 plugins:
-  create:
-    url: "http://create-plugin:8081/create"
+  create_argo:
+    url: "http://create-argo-plugin:8081/create"
     buttons:
-      - text: "Create Environment"
-        action_id: "create_environment"
+      - text: "Create Environment with Argo"
+        action_id: "create_environment_argo"
         emoji: ":hammer_and_wrench:"  # Emoji for creating an environment
     commands: |
       kubectl create namespace ${NAMESPACE}
@@ -31,6 +31,12 @@ plugins:
     hash:
       type: "SHA-256"
       value: "" # Will be calculated
+  create_flux:
+    url: "http://create-flux-plugin:8081/create"
+    buttons:
+      - text: "Create Environment with Flux"
+        action_id: "create_environment_flux"
+        emoji: ":sparkles:"  # Emoji
   get:
     url: "http://get-plugin:8082/get"
     buttons:
@@ -64,7 +70,7 @@ plugins:
         emoji: ":robot_face:"  # Emoji for asking AI
 
 main_buttons:
-  - text: "List Enabled Plugins"
+  - text: "Main Menu"
     action_id: "list_enabled_plugins"
     emoji: ":rocket:"  # Existing emoji for listing plugins
   - text: "Help"

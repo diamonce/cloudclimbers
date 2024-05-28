@@ -110,7 +110,7 @@ def create_environment():
                 {
                     "type": "button",
                     "text": "Submit Variables",
-                    "action_id": "create_environment",
+                    "action_id": "create_environment_flux",
                 }
             ],
         }
