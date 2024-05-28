@@ -6,6 +6,6 @@ COPY create_plugin.py .
 
 RUN pip install Flask
 
-EXPOSE 8081
+EXPOSE 8085
 
 CMD ["python", "create_plugin.py"]
