@@ -41,9 +41,7 @@
 🔐 **Secure** 
 - The only external connectivity bot has is websocket connection to Slack servers.
 
-##
-## **📜 Love logging** 
- ![Buttons](images/activity_logging.jpeg)
+
 
 
 
