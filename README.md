@@ -44,7 +44,7 @@
 
 ##
 ## General Design Overview
-![Design](hld/hld1.png)
+![Design](HLD/hld1.png)
 
 
 ##
