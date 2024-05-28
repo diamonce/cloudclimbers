@@ -42,12 +42,13 @@
 - The only external connectivity bot has is websocket connection to Slack servers.
 
 
-
-
+##
+## General Design Overview
+![Design](hld/hld1.png)
 
 
 ##
-### Key Technologies and Protocols
+## Key Technologies and Protocols
 
 - **Slack Events API & Socket Mode**: To receive real-time events from Slack.
 - **Go**: For implementing the bot.
@@ -61,7 +62,7 @@ This setup allows for a highly flexible and extendable bot architecture, encoura
 ---
 
 ##
-### 🍿 Getting Started
+## 🍿 Getting Started
 - Clone the Repository: Clone the Cloud Climbers Slack Bot repository to your local machine.
 - Configure the Bot: Update the YAML configuration file with your Slack tokens, MongoDB URI, and plugin URLs.
 - Run the Bot: Use Makefile to build and run the bot and its plugins.
@@ -69,7 +70,7 @@ This setup allows for a highly flexible and extendable bot architecture, encoura
 
 ---
 ##
-### 🌐 We are the "Cloud Climbers" - Hackathon Team (Credits)
+## 🌐 We are the "Cloud Climbers" - Hackathon Team (Credits)
 
 ---
 
