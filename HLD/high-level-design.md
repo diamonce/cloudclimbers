@@ -1,9 +1,7 @@
 # High level design of Slack bot for preview environment creation
 ![hld1](hld1.png)
 
-Here's a high-level design (HLD) explanation in Markdown format for the described system:
 
-```markdown
 # High-Level Design (HLD) for Slack-Based Environment Creation System
 
 ## Overview
@@ -86,7 +84,7 @@ sequenceDiagram
 ## Conclusion
 
 This system provides a seamless way for users to create and manage environments through Slack, leveraging GitOps with Flux for automated and secure deployments.
-```
+
 
 
 
