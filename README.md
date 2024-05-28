@@ -98,6 +98,6 @@ This setup allows for a highly flexible and extendable bot architecture, encoura
 #### Quick Start
 Start your day with setting up the environment
 
-# brew install pre-commit
-# pre-commit install
-# pre-commit run --all-files
+- **Install pre-commit**: `brew install pre-commit`
+- **Set up pre-commit hooks**: `pre-commit install`
+- **Run pre-commit on all files**: `pre-commit run --all-files`
