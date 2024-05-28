@@ -8,6 +8,7 @@ FLUX_CREATE_PLUGIN_DIR=./cloudclimbers-slack-bot/plugins/create_flux
 GET_PLUGIN_DIR=./cloudclimbers-slack-bot/plugins/get
 DELETE_PLUGIN_DIR=./cloudclimbers-slack-bot/plugins/delete
 HELM_CHART_DIR=./helm
+FLUX_DIR=./flux
 
 # Variables for the Cloudflare AI plugin
 CLOUDFLARE_AI_PLUGIN_DIR=./cloudclimbers-slack-bot/plugins/expert_ai_model
@@ -27,6 +28,13 @@ IMAGE_TAG=latest
 # Helm release name and namespace
 HELM_RELEASE_NAME=cloudclimbers-slack-bot
 HELM_NAMESPACE=cloudclimbers
+
+# Flux parameters
+GITHUB_USER=diamonce
+GITHUB_REPO=https://github.com/diamonce/cloudclimbers
+GITHUB_TOKEN=
+FLUX_CONTEXT=gke_slack-id_europe-central2-c_cloudclimbers-slack-bot-cluster
+FLUX_PATH=$(FLUX_DIR)/clusters/$(FLUX_CONTEXT)
 
 # Default architecture
 ARCH=amd64
@@ -120,7 +128,6 @@ docker-compose-down:
 helm-repo-add:
 	helm repo add bitnami https://charts.bitnami.com/bitnami
 	helm repo add argo https://argoproj.github.io/argo-helm
-#	helm repo update
 
 # Helm dependency build
 helm-deps: helm-repo-add
@@ -140,4 +147,21 @@ helm-upgrade: helm-deps
 helm-uninstall:
 	helm uninstall $(HELM_RELEASE_NAME) --namespace $(HELM_NAMESPACE)
 
-.PHONY: go-init deps build run test clean docker-build docker-run docker-compose-build docker-compose-up docker-compose-down gcr-init gcr-push helm-deps helm-install helm-upgrade helm-uninstall helm-repo-add
+# Flux installation
+flux-install:
+	brew install fluxcd/tap/flux || true
+	flux check --pre
+	echo "$(GITHUB_TOKEN)" | flux bootstrap github \
+	    --context=$(FLUX_CONTEXT) \
+	    --owner=$(GITHUB_USER) \
+	    --repository=$(GITHUB_REPO) \
+	    --branch=main \
+	    --personal \
+	    --path=$(FLUX_PATH) \
+	    --token-auth
+
+# Flux uninstallation
+flux-uninstall:
+	flux uninstall --silent --namespace=flux-system
+
+.PHONY: go-init deps build run test clean docker-build docker-run docker-compose-build docker-compose-up docker-compose-down gcr-init gcr-push helm-deps helm-install helm-upgrade helm-uninstall helm-repo-add flux-install
