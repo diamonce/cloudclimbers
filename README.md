@@ -19,8 +19,6 @@
 🕹️ **Buttons in Slack** 
 - Not commands. Because buttons are more robust for user interfaces.
 
-![Buttons](images/help.jpeg)
-
 
 🔐 **Secure** 
 - The only external connectivity bot has is websocket connection to Slack servers.
