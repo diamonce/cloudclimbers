@@ -57,7 +57,8 @@ build-create-flux:
 	echo "==> Building the create_flux plugin..."
 	- cp $(MAIN_PACKAGE)/go.mod $(FLUX_CREATE_PLUGIN_DIR)
 	- cp $(MAIN_PACKAGE)/go.sum $(FLUX_CREATE_PLUGIN_DIR)
-	cd $(FLUX_CREATE_PLUGIN_DIR) && go mod tidy
+#	cd $(FLUX_CREATE_PLUGIN_DIR) && GOTOOLCHAIN="" go mod tidy -e -go=1.18 -compat=1.18
+	cd $(FLUX_CREATE_PLUGIN_DIR) && GOTOOLCHAIN="" go mod tidy -e
 	cd $(FLUX_CREATE_PLUGIN_DIR) && GOOS=$(OS) GOARCH=$(ARCH) go build -o create_flux ./create_plugin.go
 	echo "==> Build completed: create_flux"
 
@@ -168,6 +169,9 @@ flux-install:
 	    --personal \
 	    --path=$(FLUX_PATH) \
 	    --token-auth
+	# Authorisation for k8 native
+	kubectl apply -f ./flux/clusterrole.yaml
+	kubectl apply -f ./flux/clusterrolebinding.yaml
 
 # Flux uninstallation
 flux-uninstall:

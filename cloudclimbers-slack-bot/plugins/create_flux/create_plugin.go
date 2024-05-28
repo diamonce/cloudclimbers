@@ -1,20 +1,28 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os/exec"
 	"strings"
 
+	helmv2 "github.com/fluxcd/helm-controller/api/v2"
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/rest"
+	//	"k8s.io/apimachinery/pkg/runtime/schema"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	// "sigs.k8s.io/controller-runtime/pkg/scheme"
+	// ctrl "sigs.k8s.io/controller-runtime"
 )
 
 type RequestData struct {
 	Commands  string            `json:"commands"`
 	Variables map[string]string `json:"variables"`
-	Hash      json.RawMessage   `json:"hash"` // Change from string to json.RawMessage
+	Hash      json.RawMessage   `json:"hash"`
 	Payload   struct {
 		State struct {
 			Values map[string]map[string]struct {
@@ -123,6 +131,52 @@ func createEnvironment(logger *zap.Logger, w http.ResponseWriter, r *http.Reques
 	json.NewEncoder(w).Encode(response)
 }
 
+func listFluxApps(logger *zap.Logger, w http.ResponseWriter, r *http.Request) {
+	logger.Info("listFluxApps function started")
+
+	cfg, err := rest.InClusterConfig()
+	if err != nil {
+		logger.Error("Failed to get in-cluster config", zap.Error(err))
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	scheme := runtime.NewScheme()
+	helmv2.AddToScheme(scheme)
+
+	k8sClient, err := client.New(cfg, client.Options{Scheme: scheme})
+	if err != nil {
+		logger.Error("Failed to create Kubernetes client", zap.Error(err))
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var helmReleases helmv2.HelmReleaseList
+	if err := k8sClient.List(context.Background(), &helmReleases); err != nil {
+		logger.Error("Failed to list HelmReleases", zap.Error(err))
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	releaseNames := []string{}
+	for _, hr := range helmReleases.Items {
+		releaseNames = append(releaseNames, hr.Name)
+	}
+
+	response := map[string]interface{}{
+		"text": "Available Applications: " + strings.Join(releaseNames, ", "),
+		"attachments": []map[string]interface{}{
+			{"text": "Helm Releases: " + strings.Join(releaseNames, ", ")},
+		},
+		"buttons": []map[string]interface{}{
+			{"type": "button", "text": "Deploy Environment", "action_id": "deploy_environment"},
+		},
+	}
+
+	logger.Info("HelmReleases listed successfully", zap.Any("response", response))
+	json.NewEncoder(w).Encode(response)
+}
+
 func loggingMiddleware(logger *zap.Logger) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -142,8 +196,12 @@ func main() {
 	r := mux.NewRouter()
 	r.Use(loggingMiddleware(logger))
 	r.HandleFunc("/create", func(w http.ResponseWriter, r *http.Request) {
-		createEnvironment(logger, w, r)
+		listFluxApps(logger, w, r)
+		//createEnvironment(logger, w, r)
 	}).Methods("POST")
+	r.HandleFunc("/list", func(w http.ResponseWriter, r *http.Request) {
+		listFluxApps(logger, w, r)
+	}).Methods("GET")
 
 	logger.Info("Starting server on :8085")
 	if err := http.ListenAndServe(":8085", r); err != nil {
