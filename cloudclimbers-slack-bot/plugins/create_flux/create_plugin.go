@@ -2,18 +2,19 @@ package main
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
 	"net/http"
 	"os/exec"
 	"strings"
 
 	"github.com/gorilla/mux"
+	"go.uber.org/zap"
 )
 
 type RequestData struct {
 	Commands  string            `json:"commands"`
 	Variables map[string]string `json:"variables"`
-	Hash      string            `json:"hash"`
+	Hash      json.RawMessage   `json:"hash"` // Change from string to json.RawMessage
 	Payload   struct {
 		State struct {
 			Values map[string]map[string]struct {
@@ -23,7 +24,7 @@ type RequestData struct {
 	} `json:"payload"`
 }
 
-func executeCommand(command string) (string, string, error) {
+func executeCommand(logger *zap.Logger, command string) (string, string, error) {
 	cmd := exec.Command("sh", "-c", command)
 	stdout, err := cmd.Output()
 	if err != nil {
@@ -36,14 +37,18 @@ func executeCommand(command string) (string, string, error) {
 	return string(stdout), "", nil
 }
 
-func createEnvironment(w http.ResponseWriter, r *http.Request) {
+func createEnvironment(logger *zap.Logger, w http.ResponseWriter, r *http.Request) {
+	logger.Info("createEnvironment function started")
+
 	var data RequestData
+
 	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+		logger.Info(fmt.Sprintf("%v", err.Error()))
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	log.Printf("Received request: %v", data)
+	logger.Info("Received request", zap.Any("data", data))
 
 	commands := data.Commands
 	variables := data.Variables
@@ -71,8 +76,12 @@ func createEnvironment(w http.ResponseWriter, r *http.Request) {
 			inputBlocks = append(inputBlocks, map[string]interface{}{
 				"type":     "input",
 				"block_id": varName,
-				"element":  map[string]interface{}{"type": "plain_text_input", "action_id": varName, "placeholder": map[string]interface{}{"type": "plain_text", "text": "Enter " + varName}},
-				"label":    map[string]interface{}{"type": "plain_text", "text": varName},
+				"element": map[string]interface{}{
+					"type":        "plain_text_input",
+					"action_id":   varName,
+					"placeholder": map[string]interface{}{"type": "plain_text", "text": "Enter " + varName},
+				},
+				"label": map[string]interface{}{"type": "plain_text", "text": varName},
 			})
 		}
 
@@ -83,6 +92,7 @@ func createEnvironment(w http.ResponseWriter, r *http.Request) {
 				{"type": "button", "text": "Submit Variables", "action_id": "create_environment_flux"},
 			},
 		}
+		logger.Info("Missing variables, prompting user for input", zap.Any("response", response))
 		json.NewEncoder(w).Encode(response)
 		return
 	}
@@ -91,11 +101,11 @@ func createEnvironment(w http.ResponseWriter, r *http.Request) {
 		commands = strings.ReplaceAll(commands, "${"+strings.ToUpper(key)+"}", value)
 	}
 
-	log.Printf("Commands to be executed: %s", commands)
+	logger.Info("Commands to be executed", zap.String("commands", commands))
 
-	stdout, stderr, err := executeCommand(commands)
+	stdout, stderr, err := executeCommand(logger, commands)
 	if err != nil {
-		log.Printf("Command execution failed: %s", stderr)
+		logger.Error("Command execution failed", zap.String("stderr", stderr))
 		http.Error(w, stderr, http.StatusInternalServerError)
 		return
 	}
@@ -109,12 +119,34 @@ func createEnvironment(w http.ResponseWriter, r *http.Request) {
 			{"type": "button", "text": "Get Environment Status", "action_id": "get_environment_status"},
 		},
 	}
+	logger.Info("Environment created successfully", zap.Any("response", response))
 	json.NewEncoder(w).Encode(response)
 }
 
-func main() {
-	r := mux.NewRouter()
-	r.HandleFunc("/create", createEnvironment).Methods("POST")
+func loggingMiddleware(logger *zap.Logger) mux.MiddlewareFunc {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			logger.Info("Request received", zap.String("method", r.Method), zap.String("url", r.URL.String()))
+			next.ServeHTTP(w, r)
+		})
+	}
+}
 
-	log.Fatal(http.ListenAndServe(":8085", r))
+func main() {
+	logger, err := zap.NewProduction()
+	if err != nil {
+		panic("Failed to initialize zap logger")
+	}
+	defer logger.Sync() // flushes buffer, if any
+
+	r := mux.NewRouter()
+	r.Use(loggingMiddleware(logger))
+	r.HandleFunc("/create", func(w http.ResponseWriter, r *http.Request) {
+		createEnvironment(logger, w, r)
+	}).Methods("POST")
+
+	logger.Info("Starting server on :8085")
+	if err := http.ListenAndServe(":8085", r); err != nil {
+		logger.Fatal("Failed to start server", zap.Error(err))
+	}
 }
