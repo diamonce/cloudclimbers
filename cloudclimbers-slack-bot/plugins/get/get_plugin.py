@@ -1,10 +1,14 @@
 import requests
+import logging
 from flask import Flask, request, jsonify
 app = Flask(__name__)
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+
 # Connection params
 token_path = "/path/to/token"
-namespace = "monitoring"
+namespace = "default"
 api_server = "https://your-kubernetes-api-server"
 # for production need to set valid cert
 #ca_cert_path = "/path/to/ca.crt"
@@ -29,6 +33,31 @@ def get_resources(url, headers, ca_cert_path):
 def get_environment():
     data = request.json
     # Implement the logic for getting the environment status here
+
+    # Getting variables from POST
+    variables = data.get("variables", {})
+    logging.info("Variables: %s", variables)
+
+    # Ensure variables is a dictionary even if it's None
+    if variables is None:
+        variables = {}
+
+    # Extract user inputs from the Slack payload
+    payload = data.get("payload", {})
+    user_inputs = payload.get("state", {}).get("values", {})
+    logging.info("User inputs: %s", user_inputs)
+
+    # Update variables with user inputs
+    for block_id, block_value in user_inputs.items():
+        action_id = list(block_value.keys())[0]
+        variables[block_id] = block_value[action_id].get("value", "")
+    logging.info("Updated Variables: %s", variables)
+
+    # Check var namespace
+    namespace = variables.get("namespace")
+    if not namespace:
+        return jsonify({"error": "Namespace not provided"}), 400
+
 
     # Read token
     token = read_token(token_path)
