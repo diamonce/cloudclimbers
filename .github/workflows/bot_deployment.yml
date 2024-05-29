@@ -19,6 +19,8 @@ jobs:
         run: make test
       - name: Build Docker image
         run: make docker-build
+      - name: Docker run
+        run: make docker-run
       - name: Helm install
         run: make helm-install
       - name: Helm upgrade
