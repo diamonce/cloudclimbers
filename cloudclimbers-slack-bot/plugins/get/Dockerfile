@@ -4,8 +4,7 @@ WORKDIR /app
 
 COPY get_plugin.py .
 
-RUN pip install Flask
-RUN pip install requests
+RUN pip install --no-cache-dir Flask requests google-auth
 
 EXPOSE 8082
 

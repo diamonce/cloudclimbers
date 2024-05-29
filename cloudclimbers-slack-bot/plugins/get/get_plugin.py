@@ -1,3 +1,5 @@
+from google.oauth2 import service_account
+from google.auth.transport.requests import Request
 import requests
 import logging
 from flask import Flask, request, jsonify
@@ -17,9 +19,9 @@ ca_cert_path = False
 
 
 # Read token from file
-def read_token(token_path):
-    with open(token_path, "r") as token_file:
-        return token_file.read().strip()
+# def read_token(token_path):
+#    with open(token_path, "r") as token_file:
+#        return token_file.read().strip()
 
 
 # Function for make requests
@@ -105,14 +107,18 @@ def get_environment():
         }
         return jsonify(response)
 
-    # Read token
-    token = read_token(token_path)
+    # Downloading a service account
+    credentials = service_account.Credentials.from_service_account_file(
+        token_path, scopes=["https://www.googleapis.com/auth/cloud-platform"]
+    )
+
+    credentials.refresh(Request())
+
+    # Getting token
+    token = credentials.token
 
     # Build headers
-    headers = {
-        #       "Authorization": f"Bearer {token}",
-        "Accept": "application/json"
-    }
+    headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
 
     # URLS to get all pods, replicasets, services and other resources in namespace
     urls = {
