@@ -19,5 +19,6 @@ jobs:
         run: make test
       - name: Build Docker image
         run: make docker-build
-      - name: Push Docker image to GCR
-        run: make docker-push
+      - name: Helm upgrade
+        run: make helm-upgrade
+
