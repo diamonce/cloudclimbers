@@ -76,6 +76,15 @@ docker-build: build
 	docker buildx build --platform $(OS)/$(ARCH) -t $(DELETE_IMAGE_REPO):$(IMAGE_TAG) $(DELETE_PLUGIN_DIR)
 	echo "==> Docker build completed"
 
+#Build Docker images for Github repo
+docker-build-ghcr: build
+	echo "==> Building Docker images..."
+	docker buildx build --platform $(OS)/$(ARCH) -t ghcr.io/diamonce/cloudclimbers:$(IMAGE_TAG) .
+	docker buildx build --platform $(OS)/$(ARCH) -t ghcr.io/diamonce/cloudclimbers-create-plugin:$(IMAGE_TAG) $(CREATE_PLUGIN_DIR)
+	docker buildx build --platform $(OS)/$(ARCH) -t ghcr.io/diamonce/cloudclimbers-get-plugin:$(IMAGE_TAG) $(GET_PLUGIN_DIR)
+	docker buildx build --platform $(OS)/$(ARCH) -t ghcr.io/diamonce/cloudclimbers-delete-plugin:$(IMAGE_TAG) $(DELETE_PLUGIN_DIR)
+	echo "==> Docker build completed"
+
 # Push Docker images to GCR
 docker-push: gcr-init docker-build
 	echo "==> Pushing Docker images to GCR..."
@@ -84,12 +93,6 @@ docker-push: gcr-init docker-build
 	docker push $(GET_IMAGE_REPO):$(IMAGE_TAG)
 	docker push $(DELETE_IMAGE_REPO):$(IMAGE_TAG)
 	echo "==> Docker images pushed to GCR"
-
-# Run Docker container built locally
-docker-run-loc: docker-build
-	echo "==> Running Docker container..."
-	docker run $(MAIN_IMAGE_REPO):$(IMAGE_TAG)
-	echo "==> Container is running..."
 
 # Run Docker container for main application
 docker-run: docker-build

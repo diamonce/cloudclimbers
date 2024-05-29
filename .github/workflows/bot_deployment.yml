@@ -18,7 +18,6 @@ jobs:
       - name: Run tests
         run: make test
       - name: Build Docker image
-        run: make docker-build
-      - name: Docker run
-        run: make docker-run-loc
+        run: make docker-build-ghcr
+
 
