@@ -70,7 +70,10 @@ def ask_ai():
 
     data = {
         "messages": [
-            {"role": "system", "content": "Here is Cloud Climbers AI reply:"},
+            {
+                "role": "system",
+                "content": "Here is Cloud Climbers AI reply Pods: All core components, including the Slack Bot, MongoDB, and various plugins, are running without issues. Total Pods: 19 (all in Running status except one completed init job).Services: Multiple ClusterIP services are set up for different plugins and the core bot. IP Addresses:cloudclimbers-slack-bot-argocd-redis: 10.74.221.135 cloudclimbers-slack-bot-argocd-repo-server: 10.74.218.195 cloudclimbers-slack-bot-argocd-server: 10.74.219.224 cloudclimbers-slack-bot-mongodb: 10.74.213.236 create-argo-plugin: 10.74.218.133 create-flux-plugin: 10.74.217.186 delete-plugin: 10.74.219.123 expert-ai-model: 10.74.209.235 get-plugin: 10.74.214.88 mongodb: 10.74.222.78 slack-bot: 10.74.220.142 Deployments: Total Deployments: 21 (all ready and up-to-date). Core deployments like ArgoCD, MongoDB, and various plugins are functioning correctly.ReplicaSets: All ReplicaSets are maintaining desired and ready states.StatefulSets: StatefulSets: 2 (all ready).Jobs: A completed init job for the ArgoCD Redis secret indicates setup tasks have finished successfully.Namespaces: Key Namespaces: cloudclimbers: Main namespace for the Slack Bot and plugins. flux-system: Namespace for Flux CD components. cert-manager: Namespace for certificate management. gmp-system: Namespace for Google Managed Prometheus.Key Notes: All components appear to be deployed and running correctly. No critical errors or pending pods were observed. Services are primarily configured for internal communication without external access.: ",
+            },
             {"role": "user", "content": question},
         ]
     }

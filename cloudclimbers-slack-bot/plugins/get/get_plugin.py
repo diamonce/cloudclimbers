@@ -19,7 +19,7 @@ ca_cert_path = False
 
 
 # Read token from file
-#def read_token(token_path):
+# def read_token(token_path):
 #    with open(token_path, "r") as token_file:
 #        return token_file.read().strip()
 
@@ -109,8 +109,7 @@ def get_environment():
 
     # Downloading a service account
     credentials = service_account.Credentials.from_service_account_file(
-        token_path,
-        scopes=['https://www.googleapis.com/auth/cloud-platform']
+        token_path, scopes=["https://www.googleapis.com/auth/cloud-platform"]
     )
 
     credentials.refresh(Request())
@@ -119,17 +118,14 @@ def get_environment():
     token = credentials.token
 
     # Build headers
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Accept": "application/json"
-    }
+    headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
 
     # URLS to get all pods, replicasets, services and other resources in namespace
     urls = {
         "pods": f"{api_server}/api/v1/namespaces/{namespace}/pods",
         "replicasets": f"{api_server}/apis/apps/v1/namespaces/{namespace}/replicasets",
         "deployments": f"{api_server}/apis/apps/v1/namespaces/{namespace}/deployments",
-        "services": f"{api_server}/api/v1/namespaces/{namespace}/services"
+        "services": f"{api_server}/api/v1/namespaces/{namespace}/services",
     }
 
     # Getting all resources
