@@ -1,3 +1,6 @@
+# How about this base image, it has smaller size
+# FROM python:3.9-alpine
+
 FROM python:3.9-slim
 
 WORKDIR /app
