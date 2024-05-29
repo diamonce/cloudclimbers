@@ -92,8 +92,12 @@ CMD ["python", "get_plugin.py"]
 ```
 
 4) Encrypt the resulting configuration file.
-
-5) Add information on assembling the plugin to the makefile.
+```code
+openssl enc -aes-256-cbc -salt -in config.yaml -out config.yaml.enc -k "<your_password>"
+kubectl delete secret slack-bot-config  -n cloudclimbers
+kubectl create secret generic slack-bot-config --from-literal=encryptionPassword=<your_password> --from-file=config.yaml.enc=config.yaml.enc -n cloudclimbers
+```
+6) Add information on assembling the plugin to the makefile.
 
 ```code
 # Build Docker images
