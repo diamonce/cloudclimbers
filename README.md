@@ -26,8 +26,7 @@
 
 🤖 **Artificial Intelligence** 
 - Bot has AI plugin augmented with Kubernetes environment preview status and other data to help developer understand possible issues, get useful stats etc.
-<!-- Image to illustrate AI
-![Image to illustrate AI](images/ai.png) -->
+![Image to illustrate AI](images/ai.png)
 
 🧩 **Language agnostic**:
 - The Cloud Climbers Slack Bot supports community contributions for plugin development in <span style="color:red">any programming language</span>. Whether you prefer Python, Go, JavaScript, or any other language, you can create plugins that interact with the bot through simple HTTP endpoints. Because plugins are Docker containers. 🤓
