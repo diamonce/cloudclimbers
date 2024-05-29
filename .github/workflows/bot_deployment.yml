@@ -25,5 +25,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push to Github Container Registry
+        run: make docker-push-ghcr
 
 
