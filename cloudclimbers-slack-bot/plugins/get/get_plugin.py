@@ -129,7 +129,7 @@ def get_environment():
         "pods": f"{api_server}/api/v1/namespaces/{namespace}/pods",
         "replicasets": f"{api_server}/apis/apps/v1/namespaces/{namespace}/replicasets",
         "deployments": f"{api_server}/apis/apps/v1/namespaces/{namespace}/deployments",
-        "services": f"{api_server}/api/v1/namespaces/{namespace}/services",
+        "services": f"{api_server}/api/v1/namespaces/{namespace}/services"
     }
 
     # Getting all resources
