@@ -8,7 +8,7 @@
 ## 🌐 **Design Data**
 - **[Architecture decisions recod](/ADR)**
 - **[High-Level Design](/HLD/high-level-design.md)**
-- **[Plugins explained](/plugins-expl)**
+- **[Plugins explained]([/HLD/plugins/plugins-create.md))**
 
 
 ##
