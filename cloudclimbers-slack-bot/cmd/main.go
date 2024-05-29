@@ -7,6 +7,8 @@ import (
 	"cloudclimbers-slack-bot/internal/utils"
 	"github.com/slack-go/slack"
 	"go.uber.org/zap"
+	// "k8s.io/client-go/kubernetes"
+	// "k8s.io/client-go/rest"
 )
 
 func main() {
