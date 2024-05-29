@@ -1,10 +1,10 @@
-FROM python:3.9-slim
+FROM python:3.9-alpine
 
 WORKDIR /app
 
 COPY get_plugin.py .
 
-RUN pip install Flask
+RUN pip install --no-cache-dir Flask requests google-auth
 
 EXPOSE 8082
 
