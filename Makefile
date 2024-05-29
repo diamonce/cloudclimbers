@@ -87,7 +87,7 @@ docker-push: gcr-init docker-build
 
 # Run Docker container built locally
 docker-run-loc: docker-build
-    echo "==> Running Docker container..."
+	echo "==> Running Docker container..."
 	docker run -it $(docker build -q .)
 
 # Run Docker container for main application
