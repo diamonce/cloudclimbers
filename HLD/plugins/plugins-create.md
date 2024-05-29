@@ -1,5 +1,3 @@
-very first draft
-
 ## Create plugins
 Any programming language is suitable for creating a plugin.
 The main condition is that the plugin must use a web server to listen to the port specified in the settings, to which the BOT will send information from the user.
@@ -118,4 +116,101 @@ docker-push: gcr-init docker-build
 
 	echo "==> Docker images pushed to GCR"
 ```
-6) Build the project and place everything on the selected server.
+
+6) Add helm config files under ./helm/tempaltes/plugins/<new_plugin_name>
+
+deployment.yaml
+```code
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: get-plugin
+  labels:
+    app: get-plugin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: get-plugin
+  template:
+    metadata:
+      labels:
+        app: get-plugin
+    spec:
+      containers:
+        - name: get-plugin
+          image: {{ .Values.plugins.get.image }}
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SLACK_BOT_TOKEN
+              value: {{ .Values.slackBot.slackBotToken }}
+            - name: SLACK_APP_TOKEN
+              value: {{ .Values.slackBot.slackAppToken }}
+            - name: MONGO_URI
+              value: {{ .Values.slackBot.mongoUri }}
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /var/secrets/decrypted/service-account-key.json
+            - name: ENCRYPTION_PASSWORD
+              value: {{ .Values.gcpServiceAccount.encryptionPassword }}
+          volumeMounts:
+            - name: gcp-service-account
+              mountPath: /var/secrets/google
+              readOnly: true
+            - name: decrypted-key
+              mountPath: /var/secrets/decrypted
+              readOnly: true
+      initContainers:
+        - name: decrypt-service-account-key
+          image: alpine
+          command:
+            [
+              "sh", "-c",
+              "set -e; apk add --no-cache openssl; ls -l /var/secrets/google; openssl enc -d -aes-256-cbc -in /var/secrets/google/service-account-key.json.enc -out /var/secrets/decrypted/service-account-key.json -k {{ .Values.gcpServiceAccount.encryptionPassword }}"
+            ]
+          volumeMounts:
+            - name: gcp-service-account
+              mountPath: /var/secrets/google
+              readOnly: true
+            - name: decrypted-key
+              mountPath: /var/secrets/decrypted
+              readOnly: false
+          env:
+            - name: ENCRYPTION_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.gcpServiceAccount.secretName }}
+                  key: encryptionPassword
+      volumes:
+        - name: gcp-service-account
+          secret:
+            secretName: {{ .Values.gcpServiceAccount.secretName }}
+        - name: decrypted-key
+          emptyDir: {}
+
+```
+
+service.yaml
+```code
+apiVersion: v1
+kind: Service
+metadata:
+  name: get-plugin
+  labels:
+    app: get-plugin
+spec:
+  ports:
+    - port: 8082
+      targetPort: 8082
+  selector:
+    app: get-plugin
+
+```
+
+8) Build the project and place everything on the selected server.
+
+```code
+make docker-push
+make helm-uninstall
+make helm-install
+```
