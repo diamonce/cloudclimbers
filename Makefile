@@ -79,10 +79,10 @@ docker-build: build
 #Build Docker images for Github repo
 docker-build-ghcr: build
 	echo "==> Building Docker images..."
-	docker buildx build --build-arg GITHUB_SHA="$GITHUB_SHA" --build-arg GITHUB_REF="$GITHUB_REF" --platform $(OS)/$(ARCH) -t ghcr.io/diamonce/cloudclimbers:cloudclimbers-slack-bot-$(IMAGE_TAG) . 
-	docker buildx build --build-arg GITHUB_SHA="$GITHUB_SHA" --build-arg GITHUB_REF="$GITHUB_REF" --platform $(OS)/$(ARCH) -t ghcr.io/diamonce/cloudclimbers:cloudclimbers-create-plugin-$(IMAGE_TAG) $(CREATE_PLUGIN_DIR)
-	docker buildx build --build-arg GITHUB_SHA="$GITHUB_SHA" --build-arg GITHUB_REF="$GITHUB_REF" --platform $(OS)/$(ARCH) -t ghcr.io/diamonce/cloudclimbers:cloudclimbers-get-plugin-$(IMAGE_TAG) $(GET_PLUGIN_DIR)
-	docker buildx build --build-arg GITHUB_SHA="$GITHUB_SHA" --build-arg GITHUB_REF="$GITHUB_REF" --platform $(OS)/$(ARCH) -t ghcr.io/diamonce/cloudclimbers:cloudclimbers-delete-plugin-$(IMAGE_TAG) $(DELETE_PLUGIN_DIR)
+	docker buildx build --build-arg GITHUB_SHA="$(GITHUB_SHA)" --build-arg GITHUB_REF="$(GITHUB_REF)" --platform $(OS)/$(ARCH) -t ghcr.io/diamonce/cloudclimbers:cloudclimbers-slack-bot-$(IMAGE_TAG) . 
+	docker buildx build --build-arg GITHUB_SHA="$(GITHUB_SHA)" --build-arg GITHUB_REF="$(GITHUB_REF)" --platform $(OS)/$(ARCH) -t ghcr.io/diamonce/cloudclimbers:cloudclimbers-create-plugin-$(IMAGE_TAG) $(CREATE_PLUGIN_DIR)
+	docker buildx build --build-arg GITHUB_SHA="$(GITHUB_SHA)" --build-arg GITHUB_REF="$(GITHUB_REF)" --platform $(OS)/$(ARCH) -t ghcr.io/diamonce/cloudclimbers:cloudclimbers-get-plugin-$(IMAGE_TAG) $(GET_PLUGIN_DIR)
+	docker buildx build --build-arg GITHUB_SHA="$(GITHUB_SHA)" --build-arg GITHUB_REF="$(GITHUB_REF)" --platform $(OS)/$(ARCH) -t ghcr.io/diamonce/cloudclimbers:cloudclimbers-delete-plugin-$(IMAGE_TAG) $(DELETE_PLUGIN_DIR)
 	echo "==> Docker build completed"
 
 # Push Docker images to GCR
