@@ -148,13 +148,12 @@ def get_environment():
         resources[resource] = resource_data
         logging.info("Received data for %s: %s", resource, resource_data)
 
-    # Making answer
     response_text = ""
     for resource, data in resources.items():
         if data:
-            response_text += f"{resource.capitalize()}:\n"
+            response_text += f"*{resource.capitalize()}:*\n"
             if resource == "pods":
-                response_text += f"{'NAME':<20}{'READY':<10}{'STATUS':<15}{'RESTARTS':<10}{'AGE':<10}\n"
+                response_text += f"`{'NAME':<20}{'READY':<10}{'STATUS':<15}{'RESTARTS':<10}{'AGE':<10}`\n"
                 for item in data["items"]:
                     name = item["metadata"]["name"]
                     ready = f"{sum(1 for c in item['status']['containerStatuses'] if c['ready'])}/{len(item['status']['containerStatuses'])}"
@@ -164,11 +163,11 @@ def get_environment():
                     )
                     age = format_age(item["metadata"]["creationTimestamp"])
                     response_text += (
-                        f"{name:<20}{ready:<10}{status:<15}{restarts:<10}{age:<10}\n"
+                        f"`{name:<20}{ready:<10}{status:<15}{restarts:<10}{age:<10}`\n"
                     )
 
             elif resource == "replicasets":
-                response_text += f"{'NAME':<20}{'DESIRED':<10}{'CURRENT':<10}{'READY':<10}{'AGE':<10}\n"
+                response_text += f"`{'NAME':<20}{'DESIRED':<10}{'CURRENT':<10}{'READY':<10}{'AGE':<10}`\n"
                 for item in data["items"]:
                     name = item["metadata"]["name"]
                     desired = item["spec"].get("replicas", "N/A")
@@ -176,21 +175,21 @@ def get_environment():
                     ready = item["status"].get("readyReplicas", "N/A")
                     age = format_age(item["metadata"]["creationTimestamp"])
                     response_text += (
-                        f"{name:<20}{desired:<10}{current:<10}{ready:<10}{age:<10}\n"
+                        f"`{name:<20}{desired:<10}{current:<10}{ready:<10}{age:<10}`\n"
                     )
 
             elif resource == "deployments":
-                response_text += f"{'NAME':<20}{'READY':<10}{'UP-TO-DATE':<10}{'AVAILABLE':<10}{'AGE':<10}\n"
+                response_text += f"`{'NAME':<20}{'READY':<10}{'UP-TO-DATE':<10}{'AVAILABLE':<10}{'AGE':<10}`\n"
                 for item in data["items"]:
                     name = item["metadata"]["name"]
                     ready = f"{item['status'].get('readyReplicas', 0)}/{item['spec'].get('replicas', 0)}"
                     up_to_date = item["status"].get("updatedReplicas", "N/A")
                     available = item["status"].get("availableReplicas", "N/A")
                     age = format_age(item["metadata"]["creationTimestamp"])
-                    response_text += f"{name:<20}{ready:<10}{up_to_date:<10}{available:<10}{age:<10}\n"
+                    response_text += f"`{name:<20}{ready:<10}{up_to_date:<10}{available:<10}{age:<10}`\n"
 
             elif resource == "services":
-                response_text += f"{'NAME':<20}{'TYPE':<15}{'CLUSTER-IP':<20}{'EXTERNAL-IP':<20}{'PORT(S)':<15}{'AGE':<10}\n"
+                response_text += f"`{'NAME':<20}{'TYPE':<15}{'CLUSTER-IP':<20}{'EXTERNAL-IP':<20}{'PORT(S)':<15}{'AGE':<10}`\n"
                 for item in data["items"]:
                     name = item["metadata"]["name"]
                     svc_type = item["spec"].get("type", "N/A")
@@ -203,11 +202,11 @@ def get_environment():
                         ]
                     )
                     age = format_age(item["metadata"]["creationTimestamp"])
-                    response_text += f"{name:<20}{svc_type:<15}{cluster_ip:<20}{external_ip:<20}{ports:<15}{age:<10}\n"
+                    response_text += f"`{name:<20}{svc_type:<15}{cluster_ip:<20}{external_ip:<20}{ports:<15}{age:<10}`\n"
 
             response_text += "\n"
         else:
-            response_text += f"Can't get {resource}.\n\n"
+            response_text += f"Can't get *{resource}*.\n\n"
 
     # Ensure response_text is JSON compatible
     response_text = (
