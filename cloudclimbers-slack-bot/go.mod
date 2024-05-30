@@ -1,6 +1,6 @@
 module cloudclimbers-slack-bot
 
-go 1.22
+go 1.21
 
 require (
 	github.com/slack-go/slack v0.10.0
