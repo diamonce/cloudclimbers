@@ -135,7 +135,7 @@ docker-push: gcr-init docker-build
 # Push Docker images to GHCR
 docker-push-ghcr:  docker-build-ghcr
 	echo "==> Pushing Docker images to GHCR..."
-	docker push $():$(IMAGE_TAG)
+	docker push $(MAIN_IMAGE_REPO):$(IMAGE_TAG)
 	docker push $(GHCR_ARGO_CREATE_IMAGE_REPO):$(IMAGE_TAG)
 	docker push $(GHCR_FLUX_CREATE_IMAGE_REPO):$(IMAGE_TAG)
 	docker push $(GHCR_GET_IMAGE_REPO):$(IMAGE_TAG)
