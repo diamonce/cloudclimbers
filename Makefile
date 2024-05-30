@@ -13,17 +13,24 @@ FLUX_DIR=./flux
 # Variables for the Cloudflare AI plugin
 CLOUDFLARE_AI_PLUGIN_DIR=./cloudclimbers-slack-bot/plugins/expert_ai_model
 CLOUDFLARE_AI_IMAGE_REPO=$(GCR_REPO)/cloudclimbers-slack-bot-expert-ai-plugin
+GHCR_CLOUDFLARE_AI_IMAGE_REPO=$(GHCR_REPO)/cloudclimbers-slack-bot-expert-ai-plugin
 
 # Docker image repositories and tags
 PROJECT_ID=slack-id
 LOCATION=europe-central2
 GCR_REPO=gcr.io/$(PROJECT_ID)
+GHCR_REPO=ghcr.io/diamonce/cloudclimbers
 MAIN_IMAGE_REPO=$(GCR_REPO)/cloudclimbers-slack-bot
 ARGO_CREATE_IMAGE_REPO=$(GCR_REPO)/cloudclimbers-slack-bot-create-argo-plugin
 FLUX_CREATE_IMAGE_REPO=$(GCR_REPO)/cloudclimbers-slack-bot-create-flux-plugin
 GET_IMAGE_REPO=$(GCR_REPO)/cloudclimbers-slack-bot-get-plugin
 DELETE_IMAGE_REPO=$(GCR_REPO)/cloudclimbers-slack-bot-delete-plugin
 IMAGE_TAG=latest
+GHCR_MAIN_IMAGE_REPO=$(GHCR_REPO):cloudclimbers-slack-bot
+GHCR_ARGO_CREATE_IMAGE_REPO=(GHCR_REPO):cloudclimbers-slack-bot-create-argo-plugin
+GHCR_FLUX_CREATE_IMAGE_REPO=(GHCR_REPO):cloudclimbers-slack-bot-create-flux-plugin
+GHCR_GET_IMAGE_REPO=(GHCR_REPO):cloudclimbers-slack-bot-get-plugin
+GHCR_DELETE_IMAGE_REPO=(GHCR_REPO):cloudclimbers-slack-bot-delete-plugin
 
 # Helm release name and namespace
 HELM_RELEASE_NAME=cloudclimbers-slack-bot
@@ -91,7 +98,7 @@ gcr-init:
 	gcloud auth configure-docker
 	gcloud services enable containerregistry.googleapis.com
 
-# Build Docker images
+# Build Docker images for GCR
 docker-build: build build-create-flux
 	echo "==> Building Docker images..."
 	docker buildx build --platform $(OS)/$(ARCH) -t $(MAIN_IMAGE_REPO):$(IMAGE_TAG) .
@@ -100,6 +107,17 @@ docker-build: build build-create-flux
 	docker buildx build --platform $(OS)/$(ARCH) -t $(GET_IMAGE_REPO):$(IMAGE_TAG) $(GET_PLUGIN_DIR)
 	docker buildx build --platform $(OS)/$(ARCH) -t $(DELETE_IMAGE_REPO):$(IMAGE_TAG) $(DELETE_PLUGIN_DIR)
 	docker buildx build --platform $(OS)/$(ARCH) -t $(CLOUDFLARE_AI_IMAGE_REPO):$(IMAGE_TAG) $(CLOUDFLARE_AI_PLUGIN_DIR)
+	echo "==> Docker build completed"
+
+# Build Docker images for GHCR
+docker-build-ghcr: build build-create-flux
+	echo "==> Building Docker images..."
+	docker buildx build --build-arg GITHUB_SHA="$(GITHUB_SHA)" --build-arg GITHUB_REF="$(GITHUB_REF)" --platform $(OS)/$(ARCH) -t $(GHCR_MAIN_IMAGE_REPO):$(IMAGE_TAG) .
+	docker buildx build --build-arg GITHUB_SHA="$(GITHUB_SHA)" --build-arg GITHUB_REF="$(GITHUB_REF)" --platform $(OS)/$(ARCH) -t $(GHCR_ARGO_CREATE_IMAGE_REPO):$(IMAGE_TAG) $(ARGO_CREATE_PLUGIN_DIR)
+	docker buildx build --build-arg GITHUB_SHA="$(GITHUB_SHA)" --build-arg GITHUB_REF="$(GITHUB_REF)" --platform $(OS)/$(ARCH) -t $(GHCR_FLUX_CREATE_IMAGE_REPO):$(IMAGE_TAG) $(FLUX_CREATE_PLUGIN_DIR)
+	docker buildx build --build-arg GITHUB_SHA="$(GITHUB_SHA)" --build-arg GITHUB_REF="$(GITHUB_REF)" --platform $(OS)/$(ARCH) -t $(GHCR_GET_IMAGE_REPO):$(IMAGE_TAG) $(GET_PLUGIN_DIR)
+	docker buildx build --build-arg GITHUB_SHA="$(GITHUB_SHA)" --build-arg GITHUB_REF="$(GITHUB_REF)" --platform $(OS)/$(ARCH) -t $(GHCR_DELETE_IMAGE_REPO):$(IMAGE_TAG) $(DELETE_PLUGIN_DIR)
+	docker buildx build --build-arg GITHUB_SHA="$(GITHUB_SHA)" --build-arg GITHUB_REF="$(GITHUB_REF)" --platform $(OS)/$(ARCH) -t $(GHCR_CLOUDFLARE_AI_IMAGE_REPO_IMAGE_REPO):$(IMAGE_TAG) $(CLOUDFLARE_AI_PLUGIN_DIR)
 	echo "==> Docker build completed"
 
 # Push Docker images to GCR
@@ -112,6 +130,18 @@ docker-push: gcr-init docker-build
 	docker push $(DELETE_IMAGE_REPO):$(IMAGE_TAG)
 	docker push $(CLOUDFLARE_AI_IMAGE_REPO):$(IMAGE_TAG)
 	echo "==> Docker images pushed to GCR"
+
+
+# Push Docker images to GHCR
+docker-push-ghcr:  docker-build-ghcr
+	echo "==> Pushing Docker images to GHCR..."
+	docker push $(GHCR_MAIN_IMAGE_REPO):$(IMAGE_TAG)
+	docker push $(GHCR_ARGO_CREATE_IMAGE_REPO):$(IMAGE_TAG)
+	docker push $(GHCR_FLUX_CREATE_IMAGE_REPO):$(IMAGE_TAG)
+	docker push $(GHCR_GET_IMAGE_REPO):$(IMAGE_TAG)
+	docker push $(GHCR_DELETE_IMAGE_REPO):$(IMAGE_TAG)
+	docker push $(GHCR_CLOUDFLARE_AI_IMAGE_REPO):$(IMAGE_TAG)
+	echo "==> Docker images pushed to GHCR"
 
 # Run Docker container for main application
 docker-run: docker-build
