@@ -27,7 +27,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: diamonce
+          password: ${{ secrets.PAT_TOKEN }}
       - name: Push to Github Container Registry
         run: make docker-push-ghcr
