@@ -94,7 +94,7 @@ docker-push: gcr-init docker-build
 	docker push $(DELETE_IMAGE_REPO):$(IMAGE_TAG)
 	echo "==> Docker images pushed to GCR"
 
-docker-push-ghcr: docker-build
+docker-push-ghcr: docker-build-ghcr
 	echo "==> Pushing Docker images to GHCR..."
         docker push ghcr.io/diamonce/cloudclimbers:cloudclimbers-slack-bot-$(IMAGE_TAG)
 	docker push ghcr.io/diamonce/cloudclimbers:cloudclimbers-create-plugin-$(IMAGE_TAG)
