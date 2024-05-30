@@ -21,15 +21,15 @@ jobs:
         run: make build
       - name: Run tests
         run: make test
-      - name: Build Docker image
-        run: make docker-build-ghcr
-      - name: Build Docker image
-        run: docker images        
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: diamonce
-          password: ${{ secrets.PAT_TOKEN }}
+          password: ${{ secrets.PAT_TOKEN }}        
+      - name: Build Docker image
+        run: make docker-build-ghcr
+      - name: Build Docker image
+        run: docker images        
       - name: Push to Github Container Registry
         run: make docker-push-ghcr
