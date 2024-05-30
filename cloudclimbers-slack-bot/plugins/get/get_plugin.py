@@ -4,6 +4,7 @@ import requests
 import logging
 from datetime import datetime
 from flask import Flask, request, jsonify
+import json
 
 app = Flask(__name__)
 
@@ -133,8 +134,8 @@ def get_environment():
 
     # URLs to get all pods, replicasets, services, and other resources in namespace
     urls = {
-        "pods": f"{api_server}/api/v1/namespaces/{namespace}/pods",
-        "replicasets": f"{api_server}/apis/apps/v1/namespaces/{namespace}/replicasets",
+        #       "pods": f"{api_server}/api/v1/namespaces/{namespace}/pods",
+        #       "replicasets": f"{api_server}/apis/apps/v1/namespaces/{namespace}/replicasets",
         "deployments": f"{api_server}/apis/apps/v1/namespaces/{namespace}/deployments",
         "services": f"{api_server}/api/v1/namespaces/{namespace}/services",
     }
