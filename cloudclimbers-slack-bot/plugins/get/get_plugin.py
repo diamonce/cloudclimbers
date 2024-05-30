@@ -107,6 +107,9 @@ def get_environment():
         }
         return jsonify(response)
 
+    # Set namespace by user input
+    namespace = variables["namespace"]
+
     # Downloading a service account
     credentials = service_account.Credentials.from_service_account_file(
         token_path, scopes=["https://www.googleapis.com/auth/cloud-platform"]
