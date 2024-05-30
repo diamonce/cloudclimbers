@@ -2,6 +2,7 @@ from google.oauth2 import service_account
 from google.auth.transport.requests import Request
 import requests
 import logging
+from datetime import datetime
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
@@ -18,20 +19,27 @@ api_server = "https://kubernetes.default.svc"
 ca_cert_path = False
 
 
-# Read token from file
-# def read_token(token_path):
-#    with open(token_path, "r") as token_file:
-#        return token_file.read().strip()
+def format_age(timestamp):
+    if not timestamp:
+        return "N/A"
+    timestamp = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
+    age = datetime.utcnow() - timestamp
+    days = age.days
+    hours, remainder = divmod(age.seconds, 3600)
+    minutes, _ = divmod(remainder, 60)
+    return f"{days}d{hours}h{minutes}m"
 
 
-# Function for make requests
+# Function for making requests
 def get_resources(url, headers, ca_cert_path):
     response = requests.get(url, headers=headers, verify=ca_cert_path)
-    logging.info("responce received: %s", response.json)
+    logging.info("Response received from URL %s: %s", url, response.text)
     if response.status_code == 200:
         return response.json()
     else:
-        print(f"Error getting resources: {response.status_code} - {response.text}")
+        logging.error(
+            f"Error getting resources: {response.status_code} - {response.text}"
+        )
         return None
 
 
@@ -123,7 +131,7 @@ def get_environment():
     # Build headers
     headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
 
-    # URLS to get all pods, replicasets, services and other resources in namespace
+    # URLs to get all pods, replicasets, services, and other resources in namespace
     urls = {
         "pods": f"{api_server}/api/v1/namespaces/{namespace}/pods",
         "replicasets": f"{api_server}/apis/apps/v1/namespaces/{namespace}/replicasets",
@@ -132,31 +140,89 @@ def get_environment():
     }
 
     # Getting all resources
-    resources = {
-        resource: get_resources(url, headers, ca_cert_path)
-        for resource, url in urls.items()
-    }
+    resources = {}
+    for resource, url in urls.items():
+        logging.info("Requesting %s from URL %s", resource, url)
+        resource_data = get_resources(url, headers, ca_cert_path)
+        resources[resource] = resource_data
+        logging.info("Received data for %s: %s", resource, resource_data)
 
     # Making answer
     response_text = ""
     for resource, data in resources.items():
         if data:
-            resource_names = [item["metadata"]["name"] for item in data["items"]]
-            response_text += (
-                f"{resource.capitalize()}:\n" + "\n".join(resource_names) + "\n\n"
-            )
+            response_text += f"{resource.capitalize()}:\n"
+            if resource == "pods":
+                response_text += f"{'NAME':<20}{'READY':<10}{'STATUS':<15}{'RESTARTS':<10}{'AGE':<10}\n"
+                for item in data["items"]:
+                    name = item["metadata"]["name"]
+                    ready = f"{sum(1 for c in item['status']['containerStatuses'] if c['ready'])}/{len(item['status']['containerStatuses'])}"
+                    status = item["status"].get("phase", "N/A")
+                    restarts = sum(
+                        c["restartCount"] for c in item["status"]["containerStatuses"]
+                    )
+                    age = format_age(item["metadata"]["creationTimestamp"])
+                    response_text += (
+                        f"{name:<20}{ready:<10}{status:<15}{restarts:<10}{age:<10}\n"
+                    )
+
+            elif resource == "replicasets":
+                response_text += f"{'NAME':<20}{'DESIRED':<10}{'CURRENT':<10}{'READY':<10}{'AGE':<10}\n"
+                for item in data["items"]:
+                    name = item["metadata"]["name"]
+                    desired = item["spec"].get("replicas", "N/A")
+                    current = item["status"].get("replicas", "N/A")
+                    ready = item["status"].get("readyReplicas", "N/A")
+                    age = format_age(item["metadata"]["creationTimestamp"])
+                    response_text += (
+                        f"{name:<20}{desired:<10}{current:<10}{ready:<10}{age:<10}\n"
+                    )
+
+            elif resource == "deployments":
+                response_text += f"{'NAME':<20}{'READY':<10}{'UP-TO-DATE':<10}{'AVAILABLE':<10}{'AGE':<10}\n"
+                for item in data["items"]:
+                    name = item["metadata"]["name"]
+                    ready = f"{item['status'].get('readyReplicas', 0)}/{item['spec'].get('replicas', 0)}"
+                    up_to_date = item["status"].get("updatedReplicas", "N/A")
+                    available = item["status"].get("availableReplicas", "N/A")
+                    age = format_age(item["metadata"]["creationTimestamp"])
+                    response_text += f"{name:<20}{ready:<10}{up_to_date:<10}{available:<10}{age:<10}\n"
+
+            elif resource == "services":
+                response_text += f"{'NAME':<20}{'TYPE':<15}{'CLUSTER-IP':<20}{'EXTERNAL-IP':<20}{'PORT(S)':<15}{'AGE':<10}\n"
+                for item in data["items"]:
+                    name = item["metadata"]["name"]
+                    svc_type = item["spec"].get("type", "N/A")
+                    cluster_ip = item["spec"].get("clusterIP", "N/A")
+                    external_ip = ", ".join(item["spec"].get("externalIPs", ["<none>"]))
+                    ports = ", ".join(
+                        [
+                            f"{p['port']}/{p['protocol']}"
+                            for p in item["spec"].get("ports", [])
+                        ]
+                    )
+                    age = format_age(item["metadata"]["creationTimestamp"])
+                    response_text += f"{name:<20}{svc_type:<15}{cluster_ip:<20}{external_ip:<20}{ports:<15}{age:<10}\n"
+
+            response_text += "\n"
         else:
             response_text += f"Can't get {resource}.\n\n"
 
+    # Ensure response_text is JSON compatible
+    response_text = (
+        json.dumps(response_text)
+        .encode()
+        .decode("unicode_escape")
+        .replace("\\n", "\n")
+        .replace("\\", "")
+    )
+
+    logging.info("Response for namespace %s: %s", namespace, response_text)
+
+    # Return the AI response to the user in Slack
     response = {
-        "text": "Environment status retrieved successfully!"
-        + "namespace "
-        + namespace
-        + ":\n"
-        + str(response_text),
-        "attachments": [
-            {"text": f"Resources in namespace {namespace}:\n{response_text}"}
-        ],
+        "text": "Environment status retrieved successfully! " + response_text,
+        "attachments": [],
         "buttons": [
             {
                 "type": "button",
