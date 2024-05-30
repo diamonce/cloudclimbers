@@ -107,6 +107,9 @@ def get_environment():
         }
         return jsonify(response)
 
+    # Set namespace by user input
+    namespace = variables.NAMESPACE
+
     # Downloading a service account
     credentials = service_account.Credentials.from_service_account_file(
         token_path,
