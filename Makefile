@@ -101,7 +101,7 @@ docker-push-ghcr: docker-build-ghcr
 	docker push ghcr.io/diamonce/cloudclimbers:cloudclimbers-create-plugin-$(IMAGE_TAG)
 	docker push ghcr.io/diamonce/cloudclimbers:cloudclimbers-get-plugin-$(IMAGE_TAG)
 	docker push ghcr.io/diamonce/cloudclimbers:cloudclimbers-delete-plugin-$(IMAGE_TAG)
-	echo "==> Docker images pushed to GCR"
+	echo "==> Docker images pushed to GCR!"
 
 # Run Docker container for main application
 docker-run: docker-build
