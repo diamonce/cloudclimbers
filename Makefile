@@ -111,12 +111,12 @@ docker-build: build build-create-flux
 # Build Docker images for GHCR
 docker-build-ghcr: build build-create-flux
 	echo "==> Building Docker images..."
-	docker buildx build --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_MAIN_IMAGE_REPO):$(IMAGE_TAG) .
-	docker buildx build --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_ARGO_CREATE_IMAGE_REPO):$(IMAGE_TAG) $(ARGO_CREATE_PLUGIN_DIR)
-	docker buildx build --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_FLUX_CREATE_IMAGE_REPO):$(IMAGE_TAG) $(FLUX_CREATE_PLUGIN_DIR)
-	docker buildx build --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_GET_IMAGE_REPO):$(IMAGE_TAG) $(GET_PLUGIN_DIR)
-	docker buildx build --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_DELETE_IMAGE_REPO):$(IMAGE_TAG) $(DELETE_PLUGIN_DIR)
-	docker buildx build --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_CLOUDFLARE_AI_IMAGE_REPO):$(IMAGE_TAG) $(CLOUDFLARE_AI_PLUGIN_DIR)
+	docker buildx build --build-arg GITHUB_REF="$(GITHUB_REF)" --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_MAIN_IMAGE_REPO):$(IMAGE_TAG) .
+	docker buildx build --build-arg GITHUB_REF="$(GITHUB_REF)" --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_ARGO_CREATE_IMAGE_REPO):$(IMAGE_TAG) $(ARGO_CREATE_PLUGIN_DIR)
+	docker buildx build --build-arg GITHUB_REF="$(GITHUB_REF)" --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_FLUX_CREATE_IMAGE_REPO):$(IMAGE_TAG) $(FLUX_CREATE_PLUGIN_DIR)
+	docker buildx build --build-arg GITHUB_REF="$(GITHUB_REF)" --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_GET_IMAGE_REPO):$(IMAGE_TAG) $(GET_PLUGIN_DIR)
+	docker buildx build --build-arg GITHUB_REF="$(GITHUB_REF)" --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_DELETE_IMAGE_REPO):$(IMAGE_TAG) $(DELETE_PLUGIN_DIR)
+	docker buildx build --build-arg GITHUB_REF="$(GITHUB_REF)" --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_CLOUDFLARE_AI_IMAGE_REPO):$(IMAGE_TAG) $(CLOUDFLARE_AI_PLUGIN_DIR)
 	echo "==> Docker build completed"
 
 # Push Docker images to GCR
