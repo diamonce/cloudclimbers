@@ -8,4 +8,4 @@ RUN pip install --no-cache-dir Flask requests google-auth
 
 EXPOSE 8086
 
-CMD ["python", "get_plugin.py"]
+CMD ["python", "get_ns_plugin.py"]

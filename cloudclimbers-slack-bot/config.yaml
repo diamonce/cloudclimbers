@@ -1,37 +1,84 @@
 slack_app_token: ""
 slack_bot_token: ""
-mongo_uri: "mongodb://localhost:27017"  # Ensure this is correctly formatted
+mongo_uri: "mongodb://mongodb:27017"  # Ensure this is correctly formatted
 database_name: "cloudclimbers_db"
+
 plugins:
-  create:
-    url: "http://localhost:8081/create"
+  create_argo:
+    url: "http://create-argo-plugin:8081/create"
     buttons:
-      - text: "Create Environment"
-        action_id: "create_environment"
+      - text: "Create Environment with Argo"
+        action_id: "create_environment_argo"
+        emoji: ":hammer_and_wrench:"  # Emoji for creating an environment
+    commands: |
+      kubectl create namespace ${NAMESPACE}
+      kubectl port-forward service/argocd-service-server -n argocd 8080:443
+      argocd login --insecure --grpc-web localhost:8080 --username admin --password ${ARGOCD_PASSWORD}
+      argocd app create ${DEPLOYMENT_NAME} \
+        --repo ${REPO_NAME} \
+        --path ${HELM_PATH} \
+        --dest-server https://kubernetes.default.svc \
+        --dest-namespace ${NAMESPACE} \
+        --helm-set-string service.port=${SERVICE_PORT} \
+        --revision "${REVISION}"
+    variables:
+      NAMESPACE: ""
+      DEPLOYMENT_NAME: ""
+      REPO_NAME: ""
+      SERVICE_PORT: ""
+      REVISION: ""
+      ARGOCD_PASSWORD: ""
+    hash:
+      type: "SHA-256"
+      value: "" # Will be calculated
+  create_flux:
+    url: "http://create-flux-plugin:8081/create"
+    buttons:
+      - text: "Create Environment with Flux"
+        action_id: "create_environment_flux"
+        emoji: ":sparkles:"  # Emoji
   get:
-    url: "http://localhost:8082/get"
+    url: "http://get-plugin:8082/get"
     buttons:
       - text: "Get Environment Status"
         action_id: "get_environment_status"
-  get_info:
-    commands: | # вибрати, що нам потрібно. Обговорити, як передати змінні та як повернути до бота результат.
-      kubectl get pods -n <namespace> -o wide
-      kubectl describe pods -n <namespace>
-      kubectl get all -n <namespace>
-      kubectl get deployment <deployment-name> -n <namespace>
-      kubectl describe deployment <deployment-name> -n <namespace>
-      kubectl get events -n <namespace>
-    buttons:
-      - text: "Get advanced Environment Status"
-        action_id: "get_adv_environment_status"
+        emoji: ":mag:"  # Emoji for getting status
+    commands: |
+      kubectl get pods -n ${NAMESPACE} -o wide
+      kubectl describe pods -n ${NAMESPACE}
+      kubectl get all -n ${NAMESPACE}
+      kubectl get deployment ${DEPLOYMENT_NAME} -n ${NAMESPACE}
+      kubectl describe deployment ${DEPLOYMENT_NAME} -n ${NAMESPACE}
+      kubectl get events -n ${NAMESPACE}
+    variables:
+      NAMESPACE: "value1"
+      DEPLOYMENT_NAME: "value2"
     hash:
-      - type: "SHA-256"
-      - value: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" #Example, this is empty string
+      type: "SHA-256"
+      value: "" # Will be calculated
   delete:
-    url: "http://localhost:8083/delete"
+    url: "http://delete-plugin:8083/delete"
     buttons:
       - text: "Delete Environment"
         action_id: "delete_environment"
+        emoji: ":wastebasket:"  # Emoji for deleting an environment
+  expertAiModel:
+    url: "http://expert-ai-model:8084/expert-ai-model"
+    buttons:
+      - text: "Ask AI"
+        action_id: "ask_ai"
+        emoji: ":robot_face:"  # Emoji for asking AI
+  get_ns:
+    url: "http://get-plugin:8086/get_ns"
+    buttons:
+      - text: "Get All namespaces"
+        action_id: "get_all_namespaces"
+        emoji: ":mag:"  # Emoji for getting status
+
 main_buttons:
-  - text: "List Enabled Plugins"
+  - text: "Main Menu"
     action_id: "list_enabled_plugins"
+    emoji: ":rocket:"  # Existing emoji for listing plugins
+  - text: "Help"
+    action_id: "help"
+    emoji: ":information_source:"  # Existing emoji for help
