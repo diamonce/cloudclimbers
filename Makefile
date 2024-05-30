@@ -64,7 +64,6 @@ build-create-flux:
 	echo "==> Building the create_flux plugin..."
 	- cp $(MAIN_PACKAGE)/go.mod $(FLUX_CREATE_PLUGIN_DIR)
 	- cp $(MAIN_PACKAGE)/go.sum $(FLUX_CREATE_PLUGIN_DIR)
-#	cd $(FLUX_CREATE_PLUGIN_DIR) && GOTOOLCHAIN="" go mod tidy -e -go=1.18 -compat=1.18
 	cd $(FLUX_CREATE_PLUGIN_DIR) && GOTOOLCHAIN="" go mod tidy -e
 	cd $(FLUX_CREATE_PLUGIN_DIR) && GOOS=$(OS) GOARCH=$(ARCH) go build -o create_flux ./create_plugin.go
 	echo "==> Build completed: create_flux"
@@ -135,7 +134,7 @@ docker-push: gcr-init docker-build
 # Push Docker images to GHCR
 docker-push-ghcr:  docker-build-ghcr
 	echo "==> Pushing Docker images to GHCR..."
-	docker push $(MAIN_IMAGE_REPO):$(IMAGE_TAG)
+	docker push $(GHCR_MAIN_IMAGE_REPO):$(IMAGE_TAG)
 	docker push $(GHCR_ARGO_CREATE_IMAGE_REPO):$(IMAGE_TAG)
 	docker push $(GHCR_FLUX_CREATE_IMAGE_REPO):$(IMAGE_TAG)
 	docker push $(GHCR_GET_IMAGE_REPO):$(IMAGE_TAG)
