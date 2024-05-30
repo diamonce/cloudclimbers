@@ -13,14 +13,6 @@ jobs:
     steps:
       - name: Checkout Branch
         uses: actions/checkout@v4.0.0
-      - name: Initialize Go
-        run: make go-init
-      - name: Install dependencies
-        run: make deps
-      - name: Create the build
-        run: make build
-      - name: Run tests
-        run: make test
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -28,8 +20,4 @@ jobs:
           username: diamonce
           password: ${{ secrets.PAT_TOKEN }}        
       - name: Build Docker image
-        run: make docker-build-ghcr
-      - name: Build Docker image
-        run: docker images        
-      - name: Push to Github Container Registry
         run: make docker-push-ghcr
