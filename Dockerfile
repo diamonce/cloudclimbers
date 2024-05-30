@@ -1,3 +1,5 @@
+LABEL org.opencontainers.image.source=https://github.com/diamonce/cloudclimbers
+
 # Build stage
 FROM golang:1.18 as builder
 
