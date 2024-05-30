@@ -94,13 +94,14 @@ docker-push: gcr-init docker-build
 	docker push $(DELETE_IMAGE_REPO):$(IMAGE_TAG)
 	echo "==> Docker images pushed to GCR"
 
+# Push Docker images to GCR
 docker-push-ghcr: docker-build-ghcr
 	echo "==> Pushing Docker images to GHCR..."
-        docker push ghcr.io/diamonce/cloudclimbers:cloudclimbers-slack-bot-$(IMAGE_TAG)
+	docker push ghcr.io/diamonce/cloudclimbers:cloudclimbers-slack-bot-$(IMAGE_TAG)
 	docker push ghcr.io/diamonce/cloudclimbers:cloudclimbers-create-plugin-$(IMAGE_TAG)
 	docker push ghcr.io/diamonce/cloudclimbers:cloudclimbers-get-plugin-$(IMAGE_TAG)
 	docker push ghcr.io/diamonce/cloudclimbers:cloudclimbers-delete-plugin-$(IMAGE_TAG)
-	echo "==> Docker images pushed to GHCR"
+	echo "==> Docker images pushed to GCR"
 
 # Run Docker container for main application
 docker-run: docker-build
