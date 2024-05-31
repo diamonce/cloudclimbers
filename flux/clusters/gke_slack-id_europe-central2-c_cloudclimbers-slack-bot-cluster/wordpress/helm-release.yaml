@@ -14,7 +14,5 @@ spec:
         name: bitnami
         namespace: wordpress
   interval: 5m0s
-  install:
-    createNamespace: true
-    remediation:
-      retries: 3
+  remediation:
+    retries: 3
