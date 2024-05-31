@@ -26,6 +26,7 @@ FLUX_CREATE_IMAGE_REPO=$(GCR_REPO)/cloudclimbers-slack-bot-create-flux-plugin
 GET_IMAGE_REPO=$(GCR_REPO)/cloudclimbers-slack-bot-get-plugin
 DELETE_IMAGE_REPO=$(GCR_REPO)/cloudclimbers-slack-bot-delete-plugin
 IMAGE_TAG=latest
+GHCR_IMAGE_TAG=v2.5.5.3
 GHCR_MAIN_IMAGE_REPO=$(GHCR_REPO)/cloudclimbers-slack-bot
 GHCR_ARGO_CREATE_IMAGE_REPO=$(GHCR_REPO)/cloudclimbers-slack-bot-create-argo-plugin
 GHCR_FLUX_CREATE_IMAGE_REPO=$(GHCR_REPO)/cloudclimbers-slack-bot-create-flux-plugin
@@ -111,12 +112,12 @@ docker-build: build build-create-flux
 # Build Docker images for GHCR
 docker-build-ghcr: build build-create-flux
 	echo "==> Building Docker images..."
-	docker buildx build --build-arg GITHUB_REF="$(GITHUB_REF)" --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_MAIN_IMAGE_REPO):$(IMAGE_TAG) .
-	docker buildx build --build-arg GITHUB_REF="$(GITHUB_REF)" --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_ARGO_CREATE_IMAGE_REPO):$(IMAGE_TAG) $(ARGO_CREATE_PLUGIN_DIR)
-	docker buildx build --build-arg GITHUB_REF="$(GITHUB_REF)" --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_FLUX_CREATE_IMAGE_REPO):$(IMAGE_TAG) $(FLUX_CREATE_PLUGIN_DIR)
-	docker buildx build --build-arg GITHUB_REF="$(GITHUB_REF)" --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_GET_IMAGE_REPO):$(IMAGE_TAG) $(GET_PLUGIN_DIR)
-	docker buildx build --build-arg GITHUB_REF="$(GITHUB_REF)" --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_DELETE_IMAGE_REPO):$(IMAGE_TAG) $(DELETE_PLUGIN_DIR)
-	docker buildx build --build-arg GITHUB_REF="$(GITHUB_REF)" --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_CLOUDFLARE_AI_IMAGE_REPO):$(IMAGE_TAG) $(CLOUDFLARE_AI_PLUGIN_DIR)
+	docker buildx build --build-arg GITHUB_REF="$(GITHUB_REF)" --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_MAIN_IMAGE_REPO):$(GHCR_IMAGE_TAG) .
+	docker buildx build --build-arg GITHUB_REF="$(GITHUB_REF)" --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_ARGO_CREATE_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(ARGO_CREATE_PLUGIN_DIR)
+	docker buildx build --build-arg GITHUB_REF="$(GITHUB_REF)" --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_FLUX_CREATE_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(FLUX_CREATE_PLUGIN_DIR)
+	docker buildx build --build-arg GITHUB_REF="$(GITHUB_REF)" --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_GET_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(GET_PLUGIN_DIR)
+	docker buildx build --build-arg GITHUB_REF="$(GITHUB_REF)" --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_DELETE_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(DELETE_PLUGIN_DIR)
+	docker buildx build --build-arg GITHUB_REF="$(GITHUB_REF)" --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_CLOUDFLARE_AI_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(CLOUDFLARE_AI_PLUGIN_DIR)
 	echo "==> Docker build completed!"
 
 # Push Docker images to GCR
@@ -134,12 +135,12 @@ docker-push: gcr-init docker-build
 # Push Docker images to GHCR
 docker-push-ghcr:  docker-build-ghcr
 	echo "==> Pushing Docker images to GHCR..."
-	docker push $(GHCR_MAIN_IMAGE_REPO):$(IMAGE_TAG)
-	docker push $(GHCR_ARGO_CREATE_IMAGE_REPO):$(IMAGE_TAG)
-	docker push $(GHCR_FLUX_CREATE_IMAGE_REPO):$(IMAGE_TAG)
-	docker push $(GHCR_GET_IMAGE_REPO):$(IMAGE_TAG)
-	docker push $(GHCR_DELETE_IMAGE_REPO):$(IMAGE_TAG)
-	docker push $(GHCR_CLOUDFLARE_AI_IMAGE_REPO):$(IMAGE_TAG)
+	docker push $(GHCR_MAIN_IMAGE_REPO):$(GHCR_IMAGE_TAG)
+	docker push $(GHCR_ARGO_CREATE_IMAGE_REPO):$(GHCR_IMAGE_TAG)
+	docker push $(GHCR_FLUX_CREATE_IMAGE_REPO):$(GHCR_IMAGE_TAG)
+	docker push $(GHCR_GET_IMAGE_REPO):$(GHCR_IMAGE_TAG)
+	docker push $(GHCR_DELETE_IMAGE_REPO):$(GHCR_IMAGE_TAG)
+	docker push $(GHCR_CLOUDFLARE_AI_IMAGE_REPO):$(GHCR_IMAGE_TAG)
 	echo "==> Docker images pushed to GHCR"
 
 # Run Docker container for main application
