@@ -12,7 +12,8 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o create_flux .
 
 # Final stage
-FROM alpine:latest
+#FROM alpine:latest
+FROM scratch
 
 WORKDIR /root/
 
