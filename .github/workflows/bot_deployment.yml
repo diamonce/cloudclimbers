@@ -3,8 +3,8 @@ name: ☁ 🏔️ Build and Push Docker Containers to GHCR
 on:
   push:
     branches:
-      - 'github_actions_new'
-  
+      - 'main'
+    
 jobs:
   deploy:
     permissions:
