@@ -14,5 +14,3 @@ spec:
         name: bitnami
         namespace: wordpress
   interval: 5m0s
-  remediation:
-    retries: 3
