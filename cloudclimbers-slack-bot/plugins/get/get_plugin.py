@@ -13,7 +13,6 @@ logging.basicConfig(level=logging.INFO)
 
 # Connection params
 token_path = "/var/secrets/decrypted/service-account-key.json"
-namespace = "cloudclimbers"
 api_server = "https://kubernetes.default.svc"
 # for production need to set valid cert
 # ca_cert_path = "/path/to/ca.crt"
@@ -42,6 +41,14 @@ def get_resources(url, headers, ca_cert_path):
             f"Error getting resources: {response.status_code} - {response.text}"
         )
         return None
+
+
+def get_namespaces(headers, ca_cert_path):
+    url = f"{api_server}/api/v1/namespaces"
+    response = get_resources(url, headers, ca_cert_path)
+    if response:
+        return [item["metadata"]["name"] for item in response.get("items", [])]
+    return []
 
 
 @app.route("/get", methods=["POST"])
@@ -77,31 +84,87 @@ def get_environment():
         action_id = list(block_value.keys())[0]
         variables[block_id] = block_value[action_id].get("value", "")
 
+    # Update variables with user inputs
+    for block_id, block_value in user_inputs.items():
+        action_id = list(block_value.keys())[0]
+        if action_id == "get_environment_status":
+            variables["namespace"] = (
+                block_value[action_id].get("selected_option", {}).get("value", "")
+            )
+
     # Log the updated variables
     logging.info("Updated Variables: %s", variables)
 
     # Check if variables are still missing and need to be provided by the user
     missing_variables = {key: "" for key, value in variables.items() if value == ""}
 
-    if missing_variables:
-        # Respond with a prompt for the user to enter missing variables
-        input_blocks = []
-        for var_name in missing_variables.keys():
-            input_blocks.append(
+    # Log the updated variables
+    logging.info("Missing Variables: %s", missing_variables)
+
+    # Downloading a service account
+    credentials = service_account.Credentials.from_service_account_file(
+        token_path, scopes=["https://www.googleapis.com/auth/cloud-platform"]
+    )
+    credentials.refresh(Request())
+    # Getting token
+    token = credentials.token
+    # Build headers
+    headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
+
+    if "namespace" in missing_variables:
+
+        logging.info("namespace in Missing Variables!!!")
+
+        if "namespace" in missing_variables:
+            # Get available namespaces
+            namespaces = get_namespaces(headers, ca_cert_path)
+            namespace_options = [
+                {
+                    "text": {
+                        "type": "plain_text",
+                        "text": namespace,
+                    },
+                    "value": namespace,
+                }
+                for namespace in namespaces
+            ]
+
+            input_blocks = [
+                {
+                    "type": "section",
+                    "text": {"type": "mrkdwn", "text": "Please select a namespace:"},
+                    "accessory": {
+                        "type": "static_select",
+                        "block_id": "namespace",
+                        "action_id": "get_environment_status",
+                        "placeholder": {
+                            "type": "plain_text",
+                            "text": "Select a namespace",
+                        },
+                        "options": namespace_options,
+                    },
+                }
+            ]
+        else:
+            input_blocks = [
                 {
                     "type": "input",
                     "block_id": var_name,
+                    "label": {
+                        "type": "plain_text",
+                        "text": f"Enter {var_name}",
+                    },
                     "element": {
                         "type": "plain_text_input",
-                        "action_id": var_name,
+                        "action_id": "get_environment_status",
                         "placeholder": {
                             "type": "plain_text",
                             "text": f"Enter {var_name}",
                         },
                     },
-                    "label": {"type": "plain_text", "text": f"{var_name}"},
                 }
-            )
+                for var_name in missing_variables.keys()
+            ]
 
         response = {
             "text": "Please provide the following variables:",
@@ -119,23 +182,8 @@ def get_environment():
     # Set namespace by user input
     namespace = variables["namespace"]
 
-    # Downloading a service account
-    credentials = service_account.Credentials.from_service_account_file(
-        token_path, scopes=["https://www.googleapis.com/auth/cloud-platform"]
-    )
-
-    credentials.refresh(Request())
-
-    # Getting token
-    token = credentials.token
-
-    # Build headers
-    headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
-
     # URLs to get all pods, replicasets, services, and other resources in namespace
     urls = {
-        #       "pods": f"{api_server}/api/v1/namespaces/{namespace}/pods",
-        #       "replicasets": f"{api_server}/apis/apps/v1/namespaces/{namespace}/replicasets",
         "deployments": f"{api_server}/apis/apps/v1/namespaces/{namespace}/deployments",
         "services": f"{api_server}/api/v1/namespaces/{namespace}/services",
     }
