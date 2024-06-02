@@ -13,7 +13,6 @@ logging.basicConfig(level=logging.INFO)
 
 # Connection params
 token_path = "/var/secrets/decrypted/service-account-key.json"
-namespace = "cloudclimbers"
 api_server = "https://kubernetes.default.svc"
 # for production need to set valid cert
 # ca_cert_path = "/path/to/ca.crt"
@@ -42,6 +41,14 @@ def get_resources(url, headers, ca_cert_path):
             f"Error getting resources: {response.status_code} - {response.text}"
         )
         return None
+
+
+def get_namespaces(headers, ca_cert_path):
+    url = f"{api_server}/api/v1/namespaces"
+    response = get_resources(url, headers, ca_cert_path)
+    if response:
+        return [item["metadata"]["name"] for item in response.get("items", [])]
+    return []
 
 
 @app.route("/get", methods=["POST"])
@@ -77,31 +84,87 @@ def get_environment():
         action_id = list(block_value.keys())[0]
         variables[block_id] = block_value[action_id].get("value", "")
 
+    # Update variables with user inputs
+    for block_id, block_value in user_inputs.items():
+        action_id = list(block_value.keys())[0]
+        if action_id == "get_environment_status":
+            variables["namespace"] = (
+                block_value[action_id].get("selected_option", {}).get("value", "")
+            )
+
     # Log the updated variables
     logging.info("Updated Variables: %s", variables)
 
     # Check if variables are still missing and need to be provided by the user
     missing_variables = {key: "" for key, value in variables.items() if value == ""}
 
-    if missing_variables:
-        # Respond with a prompt for the user to enter missing variables
-        input_blocks = []
-        for var_name in missing_variables.keys():
-            input_blocks.append(
+    # Log the updated variables
+    logging.info("Missing Variables: %s", missing_variables)
+
+    # Downloading a service account
+    credentials = service_account.Credentials.from_service_account_file(
+        token_path, scopes=["https://www.googleapis.com/auth/cloud-platform"]
+    )
+    credentials.refresh(Request())
+    # Getting token
+    token = credentials.token
+    # Build headers
+    headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
+
+    if "namespace" in missing_variables:
+
+        logging.info("namespace in Missing Variables!!!")
+
+        if "namespace" in missing_variables:
+            # Get available namespaces
+            namespaces = get_namespaces(headers, ca_cert_path)
+            namespace_options = [
+                {
+                    "text": {
+                        "type": "plain_text",
+                        "text": namespace,
+                    },
+                    "value": namespace,
+                }
+                for namespace in namespaces
+            ]
+
+            input_blocks = [
+                {
+                    "type": "section",
+                    "text": {"type": "mrkdwn", "text": "Please select a namespace:"},
+                    "accessory": {
+                        "type": "static_select",
+                        "block_id": "namespace",
+                        "action_id": "get_environment_status",
+                        "placeholder": {
+                            "type": "plain_text",
+                            "text": "Select a namespace",
+                        },
+                        "options": namespace_options,
+                    },
+                }
+            ]
+        else:
+            input_blocks = [
                 {
                     "type": "input",
                     "block_id": var_name,
+                    "label": {
+                        "type": "plain_text",
+                        "text": f"Enter {var_name}",
+                    },
                     "element": {
                         "type": "plain_text_input",
-                        "action_id": var_name,
+                        "action_id": "get_environment_status",
                         "placeholder": {
                             "type": "plain_text",
                             "text": f"Enter {var_name}",
                         },
                     },
-                    "label": {"type": "plain_text", "text": f"{var_name}"},
                 }
-            )
+                for var_name in missing_variables.keys()
+            ]
 
         response = {
             "text": "Please provide the following variables:",
@@ -119,23 +182,8 @@ def get_environment():
     # Set namespace by user input
     namespace = variables["namespace"]
 
-    # Downloading a service account
-    credentials = service_account.Credentials.from_service_account_file(
-        token_path, scopes=["https://www.googleapis.com/auth/cloud-platform"]
-    )
-
-    credentials.refresh(Request())
-
-    # Getting token
-    token = credentials.token
-
-    # Build headers
-    headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
-
     # URLs to get all pods, replicasets, services, and other resources in namespace
     urls = {
-        #       "pods": f"{api_server}/api/v1/namespaces/{namespace}/pods",
-        #       "replicasets": f"{api_server}/apis/apps/v1/namespaces/{namespace}/replicasets",
         "deployments": f"{api_server}/apis/apps/v1/namespaces/{namespace}/deployments",
         "services": f"{api_server}/api/v1/namespaces/{namespace}/services",
     }
@@ -148,12 +196,17 @@ def get_environment():
         resources[resource] = resource_data
         logging.info("Received data for %s: %s", resource, resource_data)
 
-    response_text = ""
+    response_text = (
+        "Environment status retrieved successfully for " + str(namespace) + "! \n```"
+    )
+
+    url_ports_list = []
+
     for resource, data in resources.items():
         if data:
-            response_text += f"*{resource.capitalize()}:*\n"
+            response_text += f"{resource.capitalize()}:\n"
             if resource == "pods":
-                response_text += f"`{'NAME':<20}{'READY':<10}{'STATUS':<15}{'RESTARTS':<10}{'AGE':<10}`\n"
+                response_text += f"{'NAME':<20}{'READY':<10}{'STATUS':<15}{'RESTARTS':<10}{'AGE':<10}\n"
                 for item in data["items"]:
                     name = item["metadata"]["name"]
                     ready = f"{sum(1 for c in item['status']['containerStatuses'] if c['ready'])}/{len(item['status']['containerStatuses'])}"
@@ -163,11 +216,11 @@ def get_environment():
                     )
                     age = format_age(item["metadata"]["creationTimestamp"])
                     response_text += (
-                        f"`{name:<20}{ready:<10}{status:<15}{restarts:<10}{age:<10}`\n"
+                        f"{name:<20}{ready:<10}{status:<15}{restarts:<10}{age:<10}\n"
                     )
 
             elif resource == "replicasets":
-                response_text += f"`{'NAME':<20}{'DESIRED':<10}{'CURRENT':<10}{'READY':<10}{'AGE':<10}`\n"
+                response_text += f"{'NAME':<20}{'DESIRED':<10}{'CURRENT':<10}{'READY':<10}{'AGE':<10}\n"
                 for item in data["items"]:
                     name = item["metadata"]["name"]
                     desired = item["spec"].get("replicas", "N/A")
@@ -175,26 +228,32 @@ def get_environment():
                     ready = item["status"].get("readyReplicas", "N/A")
                     age = format_age(item["metadata"]["creationTimestamp"])
                     response_text += (
-                        f"`{name:<20}{desired:<10}{current:<10}{ready:<10}{age:<10}`\n"
+                        f"{name:<20}{desired:<10}{current:<10}{ready:<10}{age:<10}\n"
                     )
 
             elif resource == "deployments":
-                response_text += f"`{'NAME':<20}{'READY':<10}{'UP-TO-DATE':<10}{'AVAILABLE':<10}{'AGE':<10}`\n"
+                response_text += f"{'NAME':<20}{'READY':<10}{'UP-TO-DATE':<10}{'AVAILABLE':<10}{'AGE':<10}\n"
                 for item in data["items"]:
                     name = item["metadata"]["name"]
                     ready = f"{item['status'].get('readyReplicas', 0)}/{item['spec'].get('replicas', 0)}"
                     up_to_date = item["status"].get("updatedReplicas", "N/A")
                     available = item["status"].get("availableReplicas", "N/A")
                     age = format_age(item["metadata"]["creationTimestamp"])
-                    response_text += f"`{name:<20}{ready:<10}{up_to_date:<10}{available:<10}{age:<10}`\n"
+                    response_text += f"{name:<20}{ready:<10}{up_to_date:<10}{available:<10}{age:<10}\n"
 
             elif resource == "services":
-                response_text += f"`{'NAME':<20}{'TYPE':<15}{'CLUSTER-IP':<20}{'EXTERNAL-IP':<20}{'PORT(S)':<15}{'AGE':<10}`\n"
+                response_text += f"{'NAME':<20}{'TYPE':<15}{'CLUSTER-IP':<20}{'EXTERNAL-IP':<20}{'PORT(S)':<15}{'AGE':<10}\n"
                 for item in data["items"]:
                     name = item["metadata"]["name"]
                     svc_type = item["spec"].get("type", "N/A")
                     cluster_ip = item["spec"].get("clusterIP", "N/A")
-                    external_ip = ", ".join(item["spec"].get("externalIPs", ["<none>"]))
+                    external_ips = [
+                        ingress.get("ip", "<none>")
+                        for ingress in item["status"]
+                        .get("loadBalancer", {})
+                        .get("ingress", [])
+                    ]
+                    external_ip = ", ".join(external_ips) if external_ips else "<none>"
                     ports = ", ".join(
                         [
                             f"{p['port']}/{p['protocol']}"
@@ -202,11 +261,28 @@ def get_environment():
                         ]
                     )
                     age = format_age(item["metadata"]["creationTimestamp"])
-                    response_text += f"`{name:<20}{svc_type:<15}{cluster_ip:<20}{external_ip:<20}{ports:<15}{age:<10}`\n"
 
-            response_text += "\n"
+                    if external_ip and external_ip != "<none>":
+                        # Detect whether to use HTTP or HTTPS
+                        url_ports = ", ".join(
+                            [
+                                f"<{'https' if p['port'] == 443 else 'http'}://{external_ip}:{p['port']}|{external_ip}:{p['port']}/>"
+                                for p in item["spec"].get("ports", [])
+                            ]
+                        )
+                        url_ports_list.append(f"{name}: {url_ports}")
+
+                    response_text += f"{name:<20}{svc_type:<15}{cluster_ip:<20}{external_ip:<20}{ports:<15}{age:<10}\n"
         else:
-            response_text += f"Can't get *{resource}*.\n\n"
+            response_text = f"Can't get {resource}.\n\n"
+
+    response_text += "```\n"
+
+    # Append URL ports list to response text
+    if url_ports_list:
+        response_text += "*Service URLs:*\n"
+        for url_port in url_ports_list:
+            response_text += f"- {url_port}\n"
 
     # Ensure response_text is JSON compatible
     response_text = (
@@ -215,13 +291,14 @@ def get_environment():
         .decode("unicode_escape")
         .replace("\\n", "\n")
         .replace("\\", "")
+        .replace('"', "")
     )
 
     logging.info("Response for namespace %s: %s", namespace, response_text)
 
     # Return the AI response to the user in Slack
     response = {
-        "text": "Environment status retrieved successfully! " + response_text,
+        "text": response_text,
         "attachments": [],
         "buttons": [
             {

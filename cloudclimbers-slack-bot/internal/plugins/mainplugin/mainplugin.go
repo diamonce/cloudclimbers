@@ -176,30 +176,83 @@ func (p *MainPlugin) handlePluginResponse(response map[string]interface{}, chann
 			blockType, _ := blockMap["type"].(string)
 			switch blockType {
 			case "section":
-				text, _ := blockMap["text"].(map[string]interface{})
-				textObj := slack.NewTextBlockObject("mrkdwn", text["text"].(string), false, false)
-				sectionBlock := slack.NewSectionBlock(textObj, nil, nil)
-				blocks = append(blocks, sectionBlock)
-			case "input":
-				label, _ := blockMap["label"].(map[string]interface{})
-				element, _ := blockMap["element"].(map[string]interface{})
-				elementType, _ := element["type"].(string)
-				var inputElement slack.BlockElement
-				switch elementType {
-				case "plain_text_input":
-					actionID, _ := element["action_id"].(string)
-					placeholder, _ := element["placeholder"].(map[string]interface{})
-					placeholderObj := slack.NewTextBlockObject("plain_text", placeholder["text"].(string), false, false)
-					inputElement = slack.NewPlainTextInputBlockElement(placeholderObj, actionID)
+				utils.Logger().Info("Processing section block", zap.Any("block", blockMap))
+				if textObj, ok := blockMap["text"].(map[string]interface{}); ok {
+					if text, ok := textObj["text"].(string); ok {
+						sectionBlock := slack.NewSectionBlock(slack.NewTextBlockObject("mrkdwn", text, false, false), nil, nil)
+
+						// Process internal blocks within the section
+						if accessory, ok := blockMap["accessory"].(map[string]interface{}); ok {
+							elementType, _ := accessory["type"].(string)
+							switch elementType {
+							case "static_select":
+								actionID, _ := accessory["action_id"].(string)
+								placeholder, _ := accessory["placeholder"].(map[string]interface{})
+								options, _ := accessory["options"].([]interface{})
+								placeholderText, _ := placeholder["text"].(string)
+
+								optionObjects := make([]*slack.OptionBlockObject, 0, len(options))
+								for _, opt := range options {
+									optMap, _ := opt.(map[string]interface{})
+									text, _ := optMap["text"].(map[string]interface{})
+									textStr, _ := text["text"].(string)
+									value, _ := optMap["value"].(string)
+									optionObjects = append(optionObjects, slack.NewOptionBlockObject(value, slack.NewTextBlockObject("plain_text", textStr, false, false), nil))
+								}
+
+								placeholderObj := slack.NewTextBlockObject("plain_text", placeholderText, false, false)
+								selectElement := slack.NewOptionsSelectBlockElement("static_select", placeholderObj, actionID, optionObjects...)
+								sectionBlock.Accessory = &slack.Accessory{
+									SelectElement: selectElement,
+								}
+							}
+						}
+
+						blocks = append(blocks, sectionBlock)
+					} else {
+						utils.Logger().Error("Text is not a string", zap.Any("text", textObj["text"]))
+					}
+				} else {
+					utils.Logger().Error("Text field is not a map", zap.Any("text", blockMap["text"]))
 				}
-				inputBlock := slack.NewInputBlock(
-					blockMap["block_id"].(string),
-					slack.NewTextBlockObject("plain_text", label["text"].(string), false, false),
-					inputElement,
-				)
-				blocks = append(blocks, inputBlock)
+			case "input":
+				utils.Logger().Info("Processing input block", zap.Any("block", blockMap))
+				if label, ok := blockMap["label"].(map[string]interface{}); ok {
+					if element, ok := blockMap["element"].(map[string]interface{}); ok {
+						elementType, _ := element["type"].(string)
+						var inputElement slack.BlockElement
+						switch elementType {
+						case "plain_text_input":
+							actionID, _ := element["action_id"].(string)
+							if placeholder, ok := element["placeholder"].(map[string]interface{}); ok {
+								if placeholderText, ok := placeholder["text"].(string); ok {
+									placeholderObj := slack.NewTextBlockObject("plain_text", placeholderText, false, false)
+									inputElement = slack.NewPlainTextInputBlockElement(placeholderObj, actionID)
+								} else {
+									utils.Logger().Error("Placeholder text is not a string", zap.Any("placeholder", placeholder["text"]))
+								}
+							} else {
+								utils.Logger().Error("Placeholder field is not a map", zap.Any("placeholder", element["placeholder"]))
+							}
+						}
+						inputBlock := slack.NewInputBlock(
+							blockMap["block_id"].(string),
+							slack.NewTextBlockObject("plain_text", label["text"].(string), false, false),
+							inputElement,
+						)
+						blocks = append(blocks, inputBlock)
+					} else {
+						utils.Logger().Error("Element field is not a map", zap.Any("element", blockMap["element"]))
+					}
+				} else {
+					utils.Logger().Error("Label field is not a map", zap.Any("label", blockMap["label"]))
+				}
+			default:
+				utils.Logger().Warn("Unknown block type", zap.String("block_type", blockType))
 			}
 		}
+	} else {
+		utils.Logger().Error("Blocks field is not a slice of interfaces", zap.Any("blocks", response["blocks"]))
 	}
 
 	if buttons, ok := response["buttons"].([]interface{}); ok {
@@ -222,6 +275,8 @@ func (p *MainPlugin) handlePluginResponse(response map[string]interface{}, chann
 		}
 		actionBlock := slack.NewActionBlock("", buttonElements...)
 		blocks = append(blocks, actionBlock)
+	} else {
+		utils.Logger().Error("Buttons field is not a slice of interfaces", zap.Any("buttons", response["buttons"]))
 	}
 
 	if len(blocks) > 0 {
@@ -230,6 +285,8 @@ func (p *MainPlugin) handlePluginResponse(response map[string]interface{}, chann
 		if err != nil {
 			utils.Logger().Error("Failed to post message", zap.Error(err))
 		}
+	} else {
+		utils.Logger().Error("No blocks to post", zap.Any("response", response))
 	}
 }
 
