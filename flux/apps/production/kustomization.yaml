@@ -6,3 +6,8 @@ patches:
   - path: podinfo-values.yaml
     target:
       kind: HelmRelease
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../base/wordpress
