@@ -14,3 +14,9 @@ spec:
           paths:
             - path: /
               pathType: ImplementationSpecific
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: wordpress
+  namespace: wordpress
