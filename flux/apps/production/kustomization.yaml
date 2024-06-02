@@ -4,6 +4,7 @@ namespace: podinfo
 resources:
   - ../base/podinfo
   - ../base/wordpress
+  - ../base/wordpress-v22-0-0
 #patches:
 #  - path: podinfo-values.yaml
 #    target:

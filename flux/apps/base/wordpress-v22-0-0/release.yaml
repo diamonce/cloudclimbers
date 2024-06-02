@@ -1,0 +1,16 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: wordpress
+  namespace: wordpress-v22-0-0
+spec:
+  releaseName: wordpress-v22-0-0
+  chart:
+    spec:
+      chart: wordpress
+      version: 22.0.0
+      sourceRef:
+        kind: HelmRepository
+        name: bitnami
+        namespace: wordpress-v22-0-0
+  interval: 5m0s
