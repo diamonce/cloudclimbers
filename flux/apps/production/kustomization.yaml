@@ -2,8 +2,8 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../base/podinfo
-  - ../base/wordpress
+#  - ../base/wordpress
 
 patchesStrategicMerge:
   - podinfo-values.yaml
-  - wordpress-values.yaml
+#  - wordpress-values.yaml
