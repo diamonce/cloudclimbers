@@ -4,7 +4,11 @@ namespace: podinfo
 resources:
   - ../base/podinfo
   - ../base/wordpress
-patches:
-  - path: podinfo-values.yaml
-    target:
-      kind: HelmRelease
+#patches:
+#  - path: podinfo-values.yaml
+#    target:
+#      kind: HelmRelease
+
+patchesStrategicMerge:
+  - podinfo-values.yaml
+  - wordpress-values.yaml
