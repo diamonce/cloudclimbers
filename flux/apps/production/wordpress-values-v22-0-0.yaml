@@ -7,7 +7,7 @@ spec:
   values:
     ingress:
       hosts:
-        - host: wordpress.production
+        - host: wordpress-v22-0-0.production
           paths:
             - path: /
               pathType: ImplementationSpecific
