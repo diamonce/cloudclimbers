@@ -4,7 +4,6 @@ kind: Kustomization
 resources:
   - ../base/podinfo
   - ../base/wordpress
-  - ../base/wordpress-v22-0-0
 #patches:
 #  - path: podinfo-values.yaml
 #    target:
@@ -13,4 +12,3 @@ resources:
 patchesStrategicMerge:
   - podinfo-values.yaml
   - wordpress-values.yaml
-  - wordpress-values-v22-0-0.yaml
