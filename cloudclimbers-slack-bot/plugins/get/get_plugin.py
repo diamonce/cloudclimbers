@@ -14,10 +14,10 @@ logging.basicConfig(level=logging.INFO)
 # Connection params
 token_path = "/var/secrets/decrypted/service-account-key.json"
 api_server = "https://kubernetes.default.svc"
-# for production need to set valid cert
-# ca_cert_path = "/path/to/ca.crt"
 ca_cert_path = False
 
+# Slack message limit (in characters)
+SLACK_MESSAGE_LIMIT = 4000
 
 def format_age(timestamp):
     if not timestamp:
@@ -29,20 +29,18 @@ def format_age(timestamp):
     minutes, _ = divmod(remainder, 60)
     return f"{days}d{hours}h{minutes}m"
 
-
 # Function for making requests
 def get_resources(url, headers, ca_cert_path):
-    response = requests.get(url, headers=headers, verify=ca_cert_path)
-    logging.info("Response received from URL %s: %s", url, response.text)
-    if response.status_code == 200:
+    try:
+        response = requests.get(url, headers=headers, verify=ca_cert_path)
+        logging.info("Response received from URL %s: %s", url, response.text)
+        response.raise_for_status()
         return response.json()
-    else:
-        logging.error(
-            f"Error getting resources: {response.status_code} - {response.text}"
-        )
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error getting resources: {e}")
         return None
 
-
+# Request for getting namespaces
 def get_namespaces(headers, ca_cert_path):
     url = f"{api_server}/api/v1/namespaces"
     response = get_resources(url, headers, ca_cert_path)
@@ -50,27 +48,40 @@ def get_namespaces(headers, ca_cert_path):
         return [item["metadata"]["name"] for item in response.get("items", [])]
     return []
 
+# Helper function to send Slack message ensuring it doesn't exceed the limit.
+def send_slack_message(response_text):
+    messages = []
+    while len(response_text) > SLACK_MESSAGE_LIMIT:
+        part = response_text[:SLACK_MESSAGE_LIMIT]
+        messages.append(part)
+        response_text = response_text[SLACK_MESSAGE_LIMIT:]
+    messages.append(response_text)
+    
+    responses = []
+    for message in messages:
+        response = {
+            "text": message,
+            "attachments": [],
+            "buttons": [{"type": "button", "text": "Delete Environment", "action_id": "delete_environment"}],
+        }
+        responses.append(response)
+    
+    return jsonify(responses)
 
 @app.route("/get", methods=["POST"])
 def get_environment():
     data = request.json
-    # Implement the logic for getting the environment status here
-
     # Log the incoming request
     logging.info("Received request: %s", data)
 
     commands = data.get("commands", "")
-    variables = data.get("variables", {})
+    variables = data.get("variables", {}) or {}
     hash_value = data.get("hash", {})
 
     # Log the fields, variables, commands, and hash
     logging.info("Commands: %s", commands)
     logging.info("Variables: %s", variables)
     logging.info("Hash: %s", hash_value)
-
-    # Ensure variables is a dictionary even if it's None
-    if variables is None:
-        variables = {}
 
     # Extract user inputs from the Slack payload
     payload = data.get("payload", {})
@@ -82,29 +93,21 @@ def get_environment():
     # Update variables with user inputs
     for block_id, block_value in user_inputs.items():
         action_id = list(block_value.keys())[0]
-        variables[block_id] = block_value[action_id].get("value", "")
-
-    # Update variables with user inputs
-    for block_id, block_value in user_inputs.items():
-        action_id = list(block_value.keys())[0]
+        value = block_value[action_id].get("value", "")
+        variables[block_id] = value
         if action_id == "get_environment_status":
-            variables["namespace"] = (
-                block_value[action_id].get("selected_option", {}).get("value", "")
-            )
+            variables["namespace"] = block_value[action_id].get("selected_option", {}).get("value", "")
 
     # Log the updated variables
     logging.info("Updated Variables: %s", variables)
 
     # Check if variables are still missing and need to be provided by the user
-    missing_variables = {key: "" for key, value in variables.items() if value == ""}
-
+    missing_variables = {key: "" for key, value in variables.items() if not value}
     # Log the updated variables
     logging.info("Missing Variables: %s", missing_variables)
 
     # Downloading a service account
-    credentials = service_account.Credentials.from_service_account_file(
-        token_path, scopes=["https://www.googleapis.com/auth/cloud-platform"]
-    )
+    credentials = service_account.Credentials.from_service_account_file(token_path, scopes=["https://www.googleapis.com/auth/cloud-platform"])
     credentials.refresh(Request())
     # Getting token
     token = credentials.token
@@ -112,78 +115,55 @@ def get_environment():
     headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
 
     if "namespace" in missing_variables:
-
         logging.info("namespace in Missing Variables!!!")
+        # Get available namespaces
+        namespaces = get_namespaces(headers, ca_cert_path)
+        namespace_options = [
+            {"text": {"type": "plain_text", "text": namespace}, "value": namespace}
+            for namespace in namespaces
+        ]
 
-        if "namespace" in missing_variables:
-            # Get available namespaces
-            namespaces = get_namespaces(headers, ca_cert_path)
-            namespace_options = [
-                {
-                    "text": {
-                        "type": "plain_text",
-                        "text": namespace,
-                    },
-                    "value": namespace,
-                }
-                for namespace in namespaces
-            ]
-
-            input_blocks = [
-                {
-                    "type": "section",
-                    "text": {"type": "mrkdwn", "text": "Please select a namespace:"},
-                    "accessory": {
-                        "type": "static_select",
-                        "block_id": "namespace",
-                        "action_id": "get_environment_status",
-                        "placeholder": {
-                            "type": "plain_text",
-                            "text": "Select a namespace",
-                        },
-                        "options": namespace_options,
-                    },
-                }
-            ]
-        else:
-            input_blocks = [
-                {
-                    "type": "input",
-                    "block_id": var_name,
-                    "label": {
-                        "type": "plain_text",
-                        "text": f"Enter {var_name}",
-                    },
-                    "element": {
-                        "type": "plain_text_input",
-                        "action_id": "get_environment_status",
-                        "placeholder": {
-                            "type": "plain_text",
-                            "text": f"Enter {var_name}",
-                        },
-                    },
-                }
-                for var_name in missing_variables.keys()
-            ]
+        input_blocks = [
+            {
+                "type": "section",
+                "text": {"type": "mrkdwn", "text": "Please select a namespace:"},
+                "accessory": {
+                    "type": "static_select",
+                    "block_id": "namespace",
+                    "action_id": "get_environment_status",
+                    "placeholder": {"type": "plain_text", "text": "Select a namespace"},
+                    "options": namespace_options,
+                },
+            }
+        ]
+    else:
+        input_blocks = [
+            {
+                "type": "input",
+                "block_id": var_name,
+                "label": {"type": "plain_text", "text": f"Enter {var_name}"},
+                "element": {
+                    "type": "plain_text_input",
+                    "action_id": "get_environment_status",
+                    "placeholder": {"type": "plain_text", "text": f"Enter {var_name}"},
+                },
+            }
+            for var_name in missing_variables.keys()
+        ]
 
         response = {
             "text": "Please provide the following variables:",
             "blocks": input_blocks,
-            "buttons": [
-                {
-                    "type": "button",
-                    "text": "Submit Variables",
-                    "action_id": "get_environment_status",
-                }
-            ],
+            "buttons": [{"type": "button", "text": "Submit Variables", "action_id": "get_environment_status"}],
         }
         return jsonify(response)
 
     # Set namespace by user input
     namespace = variables["namespace"]
-
     # URLs to get all pods, replicasets, services, and other resources in namespace
     urls = {
+        "pods": f"{api_server}/api/v1/namespaces/{namespace}/pods",
+        "replicasets": f"{api_server}/apis/apps/v1/namespaces/{namespace}/replicasets",
         "deployments": f"{api_server}/apis/apps/v1/namespaces/{namespace}/deployments",
         "services": f"{api_server}/api/v1/namespaces/{namespace}/services",
     }
@@ -196,9 +176,7 @@ def get_environment():
         resources[resource] = resource_data
         logging.info("Received data for %s: %s", resource, resource_data)
 
-    response_text = (
-        "Environment status retrieved successfully for " + str(namespace) + "! \n```"
-    )
+    response_text = f"Environment status retrieved successfully for {namespace}! \n```"
 
     url_ports_list = []
 
@@ -263,7 +241,6 @@ def get_environment():
                     age = format_age(item["metadata"]["creationTimestamp"])
 
                     if external_ip and external_ip != "<none>":
-                        # Detect whether to use HTTP or HTTPS
                         url_ports = ", ".join(
                             [
                                 f"<{'https' if p['port'] == 443 else 'http'}://{external_ip}:{p['port']}|{external_ip}:{p['port']}/>"
@@ -274,7 +251,7 @@ def get_environment():
 
                     response_text += f"{name:<20}{svc_type:<15}{cluster_ip:<20}{external_ip:<20}{ports:<15}{age:<10}\n"
         else:
-            response_text = f"Can't get {resource}.\n\n"
+            response_text += f"Can't get {resource}.\n\n"
 
     response_text += "```\n"
 
@@ -296,20 +273,8 @@ def get_environment():
 
     logging.info("Response for namespace %s: %s", namespace, response_text)
 
-    # Return the AI response to the user in Slack
-    response = {
-        "text": response_text,
-        "attachments": [],
-        "buttons": [
-            {
-                "type": "button",
-                "text": "Delete Environment",
-                "action_id": "delete_environment",
-            }
-        ],
-    }
-    return jsonify(response)
-
+    # Return the response to the user in Slack
+    return send_slack_message(response_text)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8082)
