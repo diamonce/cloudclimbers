@@ -32,4 +32,4 @@ jobs:
           password: ${{ secrets.PAT_TOKEN }}
           
       - name: Build Docker image
-        run: make docker-push-ghcr MAKEFLAGS += -x
+        run: make docker-push-ghcr
