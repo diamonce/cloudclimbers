@@ -1,7 +1,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: wordpress
+  name: wordpress-v22-0-0
   namespace: wordpress-v22-0-0
 spec:
   releaseName: wordpress-v22-0-0
