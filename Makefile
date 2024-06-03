@@ -109,17 +109,6 @@ docker-build: build build-create-flux
 	docker buildx build --platform $(OS)/$(ARCH) -t $(CLOUDFLARE_AI_IMAGE_REPO):$(IMAGE_TAG) $(CLOUDFLARE_AI_PLUGIN_DIR)
 	echo "==> Docker build completed"
 
-# Build Docker images for GHCR
-docker-build-ghcr: build build-create-flux
-	echo "==> Building Docker images..."
-	docker buildx build --build-arg GITHUB_REF="$(GITHUB_REF)" --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_MAIN_IMAGE_REPO):$(GHCR_IMAGE_TAG) .
-	docker buildx build --build-arg GITHUB_REF="$(GITHUB_REF)" --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_ARGO_CREATE_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(ARGO_CREATE_PLUGIN_DIR)
-	docker buildx build --build-arg GITHUB_REF="$(GITHUB_REF)" --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_FLUX_CREATE_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(FLUX_CREATE_PLUGIN_DIR)
-	docker buildx build --build-arg GITHUB_REF="$(GITHUB_REF)" --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_GET_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(GET_PLUGIN_DIR)
-	docker buildx build --build-arg GITHUB_REF="$(GITHUB_REF)" --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_DELETE_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(DELETE_PLUGIN_DIR)
-	docker buildx build --build-arg GITHUB_REF="$(GITHUB_REF)" --build-arg GITHUB_SHA="$(GITHUB_SHA)" --platform $(OS)/$(ARCH) -t $(GHCR_CLOUDFLARE_AI_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(CLOUDFLARE_AI_PLUGIN_DIR)
-	echo "==> Docker build completed!"
-
 # Push Docker images to GCR
 docker-push: gcr-init docker-build
 	echo "==> Pushing Docker images to GCR..."
@@ -131,9 +120,19 @@ docker-push: gcr-init docker-build
 	docker push $(CLOUDFLARE_AI_IMAGE_REPO):$(IMAGE_TAG)
 	echo "==> Docker images pushed to GCR"
 
+# Build Docker images for GHCR
+docker-build-ghcr: build build-create-flux
+	echo "==> Building Docker images..."
+	docker buildx build --platform $(OS)/$(ARCH) -t $(GHCR_MAIN_IMAGE_REPO):$(GHCR_IMAGE_TAG) .
+	docker buildx build --platform $(OS)/$(ARCH) -t $(GHCR_ARGO_CREATE_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(ARGO_CREATE_PLUGIN_DIR)
+	docker buildx build --platform $(OS)/$(ARCH) -t $(GHCR_FLUX_CREATE_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(FLUX_CREATE_PLUGIN_DIR)
+	docker buildx build --platform $(OS)/$(ARCH) -t $(GHCR_GET_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(GET_PLUGIN_DIR)
+	docker buildx build --platform $(OS)/$(ARCH) -t $(GHCR_DELETE_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(DELETE_PLUGIN_DIR)
+	docker buildx build --platform $(OS)/$(ARCH) -t $(GHCR_CLOUDFLARE_AI_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(CLOUDFLARE_AI_PLUGIN_DIR)
+	echo "==> Docker build completed!"
 
 # Push Docker images to GHCR
-docker-push-ghcr:  docker-build-ghcr
+docker-push-ghcr: docker-build-ghcr
 	echo "==> Pushing Docker images to GHCR..."
 	docker push $(GHCR_MAIN_IMAGE_REPO):$(GHCR_IMAGE_TAG)
 	docker push $(GHCR_ARGO_CREATE_IMAGE_REPO):$(GHCR_IMAGE_TAG)
