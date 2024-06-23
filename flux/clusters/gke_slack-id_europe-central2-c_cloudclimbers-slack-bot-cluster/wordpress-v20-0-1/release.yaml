@@ -14,12 +14,12 @@ spec:
         name: bitnami
         namespace: wordpress-v20-0-1
   interval: 5m0s
-  values:  # This should be directly under 'spec'
+  values:
     ingress:
       enabled: true
       className: nginx
       hosts:
-        - host: wordpress-v20-0-1.production
+        - host: wordpress-v20-0-1.cloudclimbers.xyz
           paths:
             - path: /
               pathType: ImplementationSpecific
