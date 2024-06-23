@@ -22,5 +22,5 @@ spec:
       hosts:
         - host: wordpress-v20-0-1.cloudclimbers.xyz
           paths:
-            - path: /
+            - path: /*
               pathType: ImplementationSpecific
