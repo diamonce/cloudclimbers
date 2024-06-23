@@ -13,11 +13,11 @@ spec:
         kind: HelmRepository
         name: bitnami
         namespace: wordpress-v20-0-1
-    values:
-      ingress:
-        hosts:
-          - host: wordpress-v20-0-1.production
-            paths:
-              - path: /
-                pathType: ImplementationSpecific
   interval: 5m0s
+  values:  # This should be directly under 'spec'
+    ingress:
+      hosts:
+        - host: wordpress-v20-0-1.production
+          paths:
+            - path: /
+              pathType: ImplementationSpecific
