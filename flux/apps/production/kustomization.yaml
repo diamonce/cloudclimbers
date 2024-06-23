@@ -7,4 +7,4 @@ resources:
 
 patchesStrategicMerge:
   - podinfo-values.yaml
-#  - wordpress-values.yaml
+  - wordpress-values.yaml

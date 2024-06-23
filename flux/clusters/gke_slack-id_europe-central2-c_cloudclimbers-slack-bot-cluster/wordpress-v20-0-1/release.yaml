@@ -19,8 +19,3 @@ spec:
       enabled: true
       className: nginx
       hostname: wordpress-v20-0-1.cloudclimbers.xyz
-      hosts:
-        - host: wordpress-v20-0-1.cloudclimbers.xyz
-          paths:
-            - path: /*
-              pathType: ImplementationSpecific
