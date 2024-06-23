@@ -7,7 +7,7 @@ spec:
   values:
     ingress:
       hosts:
-        - host: wordpress.production
+        - host: wordpress-v20-0-1.cloudclimbers.xyz
           paths:
             - path: /
               pathType: ImplementationSpecific
