@@ -18,8 +18,4 @@ spec:
     ingress:
       enabled: true
       className: nginx
-      hosts:
-        - host: wordpress-v20-0-1.cloudclimbers.xyz
-          paths:
-            - path: /
-              pathType: ImplementationSpecific
+      hostname: wordpress-v20-0-1.cloudclimbers.xyz
