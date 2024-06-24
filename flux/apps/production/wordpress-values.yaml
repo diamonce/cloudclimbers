@@ -13,8 +13,8 @@ spec:
         - host: wordpress-v20-0-1.cloudclimbers.xyz
           paths:
             - path: /
-              pathType: Path
+              pathType: Prefix
         - host: wordpress-v22-3-1.cloudclimbers.xyz
           paths:
             - path: /
-              pathType: Path
+              pathType: Prefix

@@ -13,4 +13,4 @@ spec:
         - host: podinfo.cloudclimbers.xyz
           paths:
             - path: /
-              pathType: Path
+              pathType: Prefix
