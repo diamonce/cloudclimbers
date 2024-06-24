@@ -1,0 +1,21 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: wordpress-v22-3-1
+  namespace: wordpress-v22-3-1
+spec:
+  releaseName: wordpress-v22-3-1
+  chart:
+    spec:
+      chart: wordpress
+      version: 20.0.1
+      sourceRef:
+        kind: HelmRepository
+        name: bitnami
+        namespace: wordpress-v22-3-1
+  interval: 5m0s
+  values:
+    ingress:
+      enabled: true
+      className: nginx
+      hostname: wordpress-v22-3-1.cloudclimbers.xyz
