@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: wordpress-v20-0-1
-  labels:
-    toolkit.fluxcd.io/tenant: dev-team
