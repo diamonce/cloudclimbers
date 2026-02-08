@@ -4,7 +4,10 @@ on:
   push:
     branches:
       - 'main'
-    
+  pull_request:
+    branches:
+      - 'main'
+
 jobs:
   deploy:
     permissions:
@@ -14,22 +17,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Branch
-        uses: actions/checkout@v4.0.0
-        
+        uses: actions/checkout@v4.2.2
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: 'stable'
-          
-      - name: Go version
+          go-version: '1.24.13'
+          cache: true
+
+      - name: Verify Go version
         run: go version
-        
+
+      - name: Run vulnerability check
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          cd cloudclimbers-slack-bot && govulncheck ./...
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.PAT_TOKEN }}
-          
-      - name: Build Docker image
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker Images
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: make docker-push-ghcr
+
+      - name: Build Docker Images (PR)
+        if: github.event_name == 'pull_request'
+        run: make docker-build-ghcr

@@ -63,10 +63,8 @@ deps: go-init
 # Build create_flux plugin
 build-create-flux:
 	echo "==> Building the create_flux plugin..."
-	- cp $(MAIN_PACKAGE)/go.mod $(FLUX_CREATE_PLUGIN_DIR)
-	- cp $(MAIN_PACKAGE)/go.sum $(FLUX_CREATE_PLUGIN_DIR)
-	cd $(FLUX_CREATE_PLUGIN_DIR) && GOTOOLCHAIN="" go mod tidy -e
-	cd $(FLUX_CREATE_PLUGIN_DIR) && GOOS=$(OS) GOARCH=$(ARCH) go build -o create_flux ./create_plugin.go
+	cd $(FLUX_CREATE_PLUGIN_DIR) && GOTOOLCHAIN=go1.24.13 go mod tidy
+	cd $(FLUX_CREATE_PLUGIN_DIR) && GOTOOLCHAIN=go1.24.13 GOOS=$(OS) GOARCH=$(ARCH) go build -o create_flux ./create_plugin.go
 	echo "==> Build completed: create_flux"
 
 # Build main binary

@@ -1,0 +1,90 @@
+# Git
+.git
+.gitignore
+.gitattributes
+.github
+
+# Documentation
+*.md
+README*
+CHANGELOG*
+LICENSE
+docs/
+
+# Development files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# CI/CD
+.gitlab-ci.yml
+.travis.yml
+azure-pipelines.yml
+
+# Testing
+*_test.go
+test/
+tests/
+*.test
+
+# Dependencies
+vendor/
+
+# Build artifacts
+*.o
+*.a
+*.so
+bin/
+build/
+dist/
+target/
+*.exe
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+.python-version
+venv/
+env/
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# MacOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Kubernetes
+*.kubeconfig
+kubeconfig*
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+
+# Environment
+.env
+.env.*
+*.local
+secrets/
+credentials/

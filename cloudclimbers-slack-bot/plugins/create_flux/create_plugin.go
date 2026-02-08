@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	"strings"
 
-	helmv2 "github.com/fluxcd/helm-controller/api/v2"
+	helmv2 "github.com/fluxcd/helm-controller/api/v2beta1"
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/runtime"

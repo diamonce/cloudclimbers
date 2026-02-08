@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.22.3-alpine AS builder
+FROM golang:1.24.13-alpine AS builder
 
 WORKDIR /app
 
@@ -9,13 +9,15 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o create_flux .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o create_flux .
 
-# Final stage
-#FROM alpine:latest
+# Final stage - using scratch for minimal attack surface
 FROM scratch
 
-WORKDIR /root/
+# Copy CA certificates for HTTPS
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+WORKDIR /app
 
 COPY --from=builder /app/create_flux .
 
