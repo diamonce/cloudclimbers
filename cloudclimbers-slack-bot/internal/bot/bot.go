@@ -235,7 +235,9 @@ func (b *Bot) logAction(actionID, userID, channelID, text string) {
 		return
 	}
 
-	channelInfo, err := b.api.GetConversationInfo(channelID, false)
+	channelInfo, err := b.api.GetConversationInfo(&slack.GetConversationInfoInput{
+		ChannelID: channelID,
+	})
 	if err != nil {
 		logger.Error("Failed to get channel info", zap.String("channel_id", channelID), zap.Error(err))
 		return

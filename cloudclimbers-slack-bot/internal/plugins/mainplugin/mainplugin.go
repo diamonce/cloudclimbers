@@ -238,6 +238,7 @@ func (p *MainPlugin) handlePluginResponse(response map[string]interface{}, chann
 						inputBlock := slack.NewInputBlock(
 							blockMap["block_id"].(string),
 							slack.NewTextBlockObject("plain_text", label["text"].(string), false, false),
+							nil, // hint parameter (optional)
 							inputElement,
 						)
 						blocks = append(blocks, inputBlock)
