@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.18 as builder
+FROM golang:1.24.13-alpine AS builder
 
 WORKDIR /app
 
@@ -9,13 +9,22 @@ RUN go mod download
 
 COPY ./cloudclimbers-slack-bot/ .
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o cloudclimbers-slack-bot ./cmd/main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o cloudclimbers-slack-bot ./cmd/main.go
 
-FROM alpine:latest
+# Final stage
+FROM alpine:3.21
 
-WORKDIR /root/
+# Install ca-certificates for HTTPS requests
+RUN apk --no-cache add ca-certificates tzdata && \
+    addgroup -g 1000 appuser && \
+    adduser -D -u 1000 -G appuser appuser
+
+WORKDIR /app
 
 COPY --from=builder /app/cloudclimbers-slack-bot .
+
+# Run as non-root user
+USER appuser
 
 EXPOSE 8080
 

@@ -16,6 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `net/url` - Memory exhaustion in query parameter parsing
   - `encoding/asn1` - DER payload parsing memory exhaustion
 - Fixed sensitive data leak vulnerability in `github.com/go-viper/mapstructure/v2`
+- **Docker**: Updated all base images to latest secure versions
+  - Go images: 1.18/1.22 → 1.24.13
+  - Python images: 3.9 (EOL) → 3.12
+  - Alpine: Updated to 3.21
+- **Docker**: Implemented non-root user execution in all containers
+- **Docker**: Added CA certificates for HTTPS support in scratch-based images
+- Pinned Python dependencies to specific versions to prevent supply chain attacks
 
 ### Changed
 - **Breaking**: Upgraded major dependencies (requires Go 1.24.13+):
@@ -26,6 +33,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `github.com/go-viper/mapstructure/v2`: v2.2.1 → v2.4.0
 - Updated 15+ indirect dependencies to latest secure versions
 - Modernized logging and configuration libraries
+- **Docker**: Optimized build process with multi-stage builds
+- **Docker**: Added binary stripping (-ldflags="-w -s") to reduce image size
+- **CI/CD**: Pinned GitHub Actions to specific Go version (1.24.13)
+- **CI/CD**: Added automated vulnerability scanning in CI pipeline
+- **CI/CD**: Added Docker Buildx for improved build performance
+- **CI/CD**: Separated build/push logic for PRs vs main branch
 
 ### Fixed
 - Fixed `slack.NewInputBlock()` API compatibility for Slack SDK v0.15.0 (added hint parameter)
@@ -34,11 +47,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Created `CHANGELOG.md` to track version history going forward
+- Added `requirements.txt` files for all Python plugins
+- Added `.dockerignore` file to improve build performance and security
+- **CI/CD**: Added vulnerability scanning with govulncheck in GitHub Actions
+- **CI/CD**: Added PR build validation (build-only without push)
 
 ### Notes
 - This release contains no functional changes to bot behavior
 - All changes are security updates and dependency modernization
 - Thoroughly tested with `govulncheck` - zero vulnerabilities reported
+- Docker images are significantly smaller and more secure
 - Recommended for immediate deployment to production
 
 ---
