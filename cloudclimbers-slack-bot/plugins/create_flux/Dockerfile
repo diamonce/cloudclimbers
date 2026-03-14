@@ -23,4 +23,6 @@ COPY --from=builder /app/create_flux .
 
 EXPOSE 8085
 
+USER 65534:65534
+
 CMD ["./create_flux"]

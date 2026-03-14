@@ -149,3 +149,4 @@ charts/*/*.tgz
 .Trashes
 cloudclimbers-slack-bot/cloudclimbers-slack-bot-runner
 terraform/.terraform.lock.hcl
+trivy-fs-results.sarif

@@ -26,7 +26,7 @@ FLUX_CREATE_IMAGE_REPO=$(GCR_REPO)/cloudclimbers-slack-bot-create-flux-plugin
 GET_IMAGE_REPO=$(GCR_REPO)/cloudclimbers-slack-bot-get-plugin
 DELETE_IMAGE_REPO=$(GCR_REPO)/cloudclimbers-slack-bot-delete-plugin
 IMAGE_TAG=latest
-GHCR_IMAGE_TAG=v2.5.5.4
+GHCR_IMAGE_TAG=v2.6.0
 GHCR_MAIN_IMAGE_REPO=$(GHCR_REPO)/cloudclimbers-slack-bot
 GHCR_ARGO_CREATE_IMAGE_REPO=$(GHCR_REPO)/cloudclimbers-slack-bot-create-argo-plugin
 GHCR_FLUX_CREATE_IMAGE_REPO=$(GHCR_REPO)/cloudclimbers-slack-bot-create-flux-plugin
@@ -63,8 +63,8 @@ deps: go-init
 # Build create_flux plugin
 build-create-flux:
 	echo "==> Building the create_flux plugin..."
-	cd $(FLUX_CREATE_PLUGIN_DIR) && GOTOOLCHAIN=go1.24.13 go mod tidy
-	cd $(FLUX_CREATE_PLUGIN_DIR) && GOTOOLCHAIN=go1.24.13 GOOS=$(OS) GOARCH=$(ARCH) go build -o create_flux ./create_plugin.go
+	cd $(FLUX_CREATE_PLUGIN_DIR) && GOTOOLCHAIN=go1.25.8 go mod tidy
+	cd $(FLUX_CREATE_PLUGIN_DIR) && GOTOOLCHAIN=go1.25.8 GOOS=$(OS) GOARCH=$(ARCH) go build -o create_flux ./create_plugin.go
 	echo "==> Build completed: create_flux"
 
 # Build main binary
