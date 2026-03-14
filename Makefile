@@ -118,26 +118,26 @@ docker-push: gcr-init docker-build
 	docker push $(CLOUDFLARE_AI_IMAGE_REPO):$(IMAGE_TAG)
 	echo "==> Docker images pushed to GCR"
 
-# Build Docker images for GHCR
+# Build Docker images for GHCR (local only, no push)
 docker-build-ghcr: build build-create-flux
 	echo "==> Building Docker images..."
-	docker buildx build --platform $(OS)/$(ARCH) -t $(GHCR_MAIN_IMAGE_REPO):$(GHCR_IMAGE_TAG) .
-	docker buildx build --platform $(OS)/$(ARCH) -t $(GHCR_ARGO_CREATE_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(ARGO_CREATE_PLUGIN_DIR)
-	docker buildx build --platform $(OS)/$(ARCH) -t $(GHCR_FLUX_CREATE_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(FLUX_CREATE_PLUGIN_DIR)
-	docker buildx build --platform $(OS)/$(ARCH) -t $(GHCR_GET_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(GET_PLUGIN_DIR)
-	docker buildx build --platform $(OS)/$(ARCH) -t $(GHCR_DELETE_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(DELETE_PLUGIN_DIR)
-	docker buildx build --platform $(OS)/$(ARCH) -t $(GHCR_CLOUDFLARE_AI_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(CLOUDFLARE_AI_PLUGIN_DIR)
+	docker buildx build --platform $(OS)/$(ARCH) --load -t $(GHCR_MAIN_IMAGE_REPO):$(GHCR_IMAGE_TAG) .
+	docker buildx build --platform $(OS)/$(ARCH) --load -t $(GHCR_ARGO_CREATE_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(ARGO_CREATE_PLUGIN_DIR)
+	docker buildx build --platform $(OS)/$(ARCH) --load -t $(GHCR_FLUX_CREATE_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(FLUX_CREATE_PLUGIN_DIR)
+	docker buildx build --platform $(OS)/$(ARCH) --load -t $(GHCR_GET_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(GET_PLUGIN_DIR)
+	docker buildx build --platform $(OS)/$(ARCH) --load -t $(GHCR_DELETE_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(DELETE_PLUGIN_DIR)
+	docker buildx build --platform $(OS)/$(ARCH) --load -t $(GHCR_CLOUDFLARE_AI_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(CLOUDFLARE_AI_PLUGIN_DIR)
 	echo "==> Docker build completed!"
 
-# Push Docker images to GHCR
-docker-push-ghcr: docker-build-ghcr
-	echo "==> Pushing Docker images to GHCR..."
-	docker push $(GHCR_MAIN_IMAGE_REPO):$(GHCR_IMAGE_TAG)
-	docker push $(GHCR_ARGO_CREATE_IMAGE_REPO):$(GHCR_IMAGE_TAG)
-	docker push $(GHCR_FLUX_CREATE_IMAGE_REPO):$(GHCR_IMAGE_TAG)
-	docker push $(GHCR_GET_IMAGE_REPO):$(GHCR_IMAGE_TAG)
-	docker push $(GHCR_DELETE_IMAGE_REPO):$(GHCR_IMAGE_TAG)
-	docker push $(GHCR_CLOUDFLARE_AI_IMAGE_REPO):$(GHCR_IMAGE_TAG)
+# Push Docker images to GHCR (build and push in one step via --push)
+docker-push-ghcr: build build-create-flux
+	echo "==> Building and pushing Docker images to GHCR..."
+	docker buildx build --platform $(OS)/$(ARCH) --push -t $(GHCR_MAIN_IMAGE_REPO):$(GHCR_IMAGE_TAG) .
+	docker buildx build --platform $(OS)/$(ARCH) --push -t $(GHCR_ARGO_CREATE_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(ARGO_CREATE_PLUGIN_DIR)
+	docker buildx build --platform $(OS)/$(ARCH) --push -t $(GHCR_FLUX_CREATE_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(FLUX_CREATE_PLUGIN_DIR)
+	docker buildx build --platform $(OS)/$(ARCH) --push -t $(GHCR_GET_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(GET_PLUGIN_DIR)
+	docker buildx build --platform $(OS)/$(ARCH) --push -t $(GHCR_DELETE_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(DELETE_PLUGIN_DIR)
+	docker buildx build --platform $(OS)/$(ARCH) --push -t $(GHCR_CLOUDFLARE_AI_IMAGE_REPO):$(GHCR_IMAGE_TAG) $(CLOUDFLARE_AI_PLUGIN_DIR)
 	echo "==> Docker images pushed to GHCR"
 
 # Run Docker container for main application
