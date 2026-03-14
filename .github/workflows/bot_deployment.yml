@@ -14,6 +14,7 @@ jobs:
       contents: 'read'
       id-token: 'write'
       packages: 'write'
+      security-events: 'write'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Branch
@@ -32,6 +33,24 @@ jobs:
         run: |
           go install golang.org/x/vuln/cmd/govulncheck@latest
           cd cloudclimbers-slack-bot && govulncheck ./...
+
+      - name: Scan repository dependencies (Trivy)
+        uses: aquasecurity/trivy-action@0.30.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          scanners: 'vuln,secret,misconfig'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+          format: 'sarif'
+          output: 'trivy-fs-results.sarif'
+
+      - name: Upload Trivy filesystem scan results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-fs-results.sarif'
+          category: 'trivy-fs'
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
