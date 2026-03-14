@@ -1,6 +1,6 @@
 module cloudclimbers-slack-bot
 
-go 1.24.13
+go 1.25.8
 
 require (
 	github.com/fluxcd/helm-controller/api v1.3.0
