@@ -23,7 +23,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24.13'
+          go-version: '1.25.8'
           cache: true
 
       - name: Verify Go version
@@ -34,16 +34,19 @@ jobs:
           go install golang.org/x/vuln/cmd/govulncheck@latest
           cd cloudclimbers-slack-bot && govulncheck ./...
 
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+          trivy --version
+
       - name: Scan repository dependencies (Trivy - SARIF)
-        uses: aquasecurity/trivy-action@0.30.0
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          scanners: 'vuln,secret,misconfig'
-          severity: 'CRITICAL,HIGH'
-          exit-code: '0'
-          format: 'sarif'
-          output: 'trivy-fs-results.sarif'
+        run: |
+          trivy fs . \
+            --scanners vuln,secret,misconfig \
+            --severity CRITICAL,HIGH \
+            --exit-code 0 \
+            --format sarif \
+            --output trivy-fs-results.sarif
 
       - name: Upload Trivy filesystem scan results to GitHub Security
         uses: github/codeql-action/upload-sarif@v4
@@ -52,14 +55,12 @@ jobs:
           category: 'trivy-fs'
 
       - name: Fail build on CRITICAL/HIGH findings (Trivy)
-        uses: aquasecurity/trivy-action@0.30.0
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          scanners: 'vuln,secret,misconfig'
-          severity: 'CRITICAL,HIGH'
-          exit-code: '1'
-          format: 'table'
+        run: |
+          trivy fs . \
+            --scanners vuln,secret,misconfig \
+            --severity CRITICAL,HIGH \
+            --exit-code 1 \
+            --format table
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
