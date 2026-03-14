@@ -3,14 +3,16 @@ misconfigurations:
   # gotk-components.yaml is managed by Flux and cannot be modified without breaking the controller.
   - id: KSV-0041
     paths:
-      - "flux/clusters/*/flux-system/gotk-components.yaml"
+      - "flux/clusters/gke_slack-id_europe-central2-c_cloudclimbers-slack-bot-cluster/flux-system/gotk-components.yaml"
+    statement: "Flux-managed ClusterRole requires secrets access to function"
   - id: KSV-0046
     paths:
-      - "flux/clusters/*/flux-system/gotk-components.yaml"
+      - "flux/clusters/gke_slack-id_europe-central2-c_cloudclimbers-slack-bot-cluster/flux-system/gotk-components.yaml"
+    statement: "Flux-managed ClusterRole requires all-resource access to function"
 
-  # GKE master authorized networks is set to 0.0.0.0/0 to allow access from CI runners and
-  # dynamic IPs. The control plane still requires GKE authentication and RBAC authorization.
-  # Restrict this CIDR when static egress IPs are available.
+  # GKE master authorized networks uses 0.0.0.0/0 to support dynamic CI runner IPs.
+  # The control plane still requires GKE authentication and RBAC. Restrict when static IPs are available.
   - id: GCP-0053
     paths:
       - "terraform/main.tf"
+    statement: "0.0.0.0/0 intentional for dynamic CI runner and developer IPs"

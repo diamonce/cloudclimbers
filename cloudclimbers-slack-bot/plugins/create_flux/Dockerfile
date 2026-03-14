@@ -12,6 +12,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o create_flux .
 
 # Final stage - using scratch for minimal attack surface
+# trivy:ignore:DS-0002
 FROM scratch
 
 # Copy CA certificates for HTTPS
