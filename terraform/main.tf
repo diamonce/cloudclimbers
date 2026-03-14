@@ -33,10 +33,25 @@ resource "google_container_cluster" "primary" {
   location           = var.region
   initial_node_count = 3
 
+  master_authorized_networks_config {
+    cidr_blocks {
+      cidr_block   = "0.0.0.0/0"
+      display_name = "all"
+    }
+  }
+
   node_config {
     machine_type = "e2-medium"
     disk_size_gb = 50   # Reduce the disk size if appropriate
     disk_type    = "pd-standard"  # Change to standard persistent disks
+
+    metadata = {
+      disable-legacy-endpoints = "true"
+    }
+
+    workload_metadata_config {
+      node_metadata = "GKE_METADATA_SERVER"
+    }
   }
 }
 
@@ -50,6 +65,14 @@ resource "google_container_node_pool" "primary_nodes" {
     machine_type = "e2-medium"
     disk_size_gb = 50   # Reduce the disk size if appropriate
     disk_type    = "pd-standard"  # Change to standard persistent disks
+
+    metadata = {
+      disable-legacy-endpoints = "true"
+    }
+
+    workload_metadata_config {
+      node_metadata = "GKE_METADATA_SERVER"
+    }
   }
 }
 

@@ -1,0 +1,9 @@
+misconfigurations:
+  # Flux system ClusterRoles require broad RBAC permissions by design.
+  # gotk-components.yaml is managed by Flux and cannot be modified without breaking the controller.
+  - id: KSV-0041
+    paths:
+      - "flux/clusters/*/flux-system/gotk-components.yaml"
+  - id: KSV-0046
+    paths:
+      - "flux/clusters/*/flux-system/gotk-components.yaml"

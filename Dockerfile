@@ -5,7 +5,7 @@ WORKDIR /app
 
 COPY ./cloudclimbers-slack-bot/go.mod ./cloudclimbers-slack-bot/go.sum ./
 
-RUN go mod download
+RUN go get golang.org/x/crypto@v0.35.0 && go mod download
 
 COPY ./cloudclimbers-slack-bot/ .
 
