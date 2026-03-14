@@ -7,3 +7,10 @@ misconfigurations:
   - id: KSV-0046
     paths:
       - "flux/clusters/*/flux-system/gotk-components.yaml"
+
+  # GKE master authorized networks is set to 0.0.0.0/0 to allow access from CI runners and
+  # dynamic IPs. The control plane still requires GKE authentication and RBAC authorization.
+  # Restrict this CIDR when static egress IPs are available.
+  - id: GCP-0053
+    paths:
+      - "terraform/main.tf"
