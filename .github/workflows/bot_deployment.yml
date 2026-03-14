@@ -31,7 +31,7 @@ jobs:
 
       - name: Update Go dependencies
         run: |
-          cd cloudclimbers-slack-bot && go mod tidy
+          cd cloudclimbers-slack-bot && go mod tidy && go get golang.org/x/crypto@v0.35.0
 
       - name: Run vulnerability check
         run: |
